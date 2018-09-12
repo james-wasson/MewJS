@@ -53,7 +53,6 @@ class ComponentFactory {
 }
 
 function MountComponent(nodeOrId, componentFactory) {
-    console.log(nodeOrId, componentFactory)
     if (!typeChecker.isComponentFactory(componentFactory)) {
         console.error('Mount type expects type of componentFactory.');
         return null;

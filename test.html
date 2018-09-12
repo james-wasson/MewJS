@@ -6,7 +6,8 @@
         var childComp = new MewJS.Component({
             parent: {
                 props: { 
-                    'prop2Child': 'prop2-rename'
+                    'prop2Child': 'prop2-rename',
+                    'p-sub-bottom': 'p-sub-bottom'
                 },
                 emit: ['event1']
             },
@@ -17,7 +18,7 @@
                         type: 'number',
                     }
                 },
-                template: '<p>c1</p>',
+                template: `<p m-on="{ click: function() { this.$emit.event1('uno', 'dos'); } }">c1</p>`,
                 watchers: {
                     'prop2Child': function(newVal, oldVal) {
                         this.$emit.event1('uno', 'dos');
@@ -74,21 +75,23 @@
                     }
                 },
                 components: {
-                    'component1': [{
-                        definition: childComp,
-                        props: {
-                            'p-sub-bottom': {
-                                value: 4,
-                                type: 'number'
+                    'component1': [...Array(5).keys()].map(p => {
+                        return { 
+                            definition: childComp,
+                            props: {
+                                'p-sub-bottom': {
+                                    value: 4,
+                                    type: 'number'
+                                },
+                                'prop2-rename': 'prop2'
                             },
-                            'prop2-rename': 'prop2'
-                        },
-                        listeners: {
-                            'event1': function() {
-                                console.log(arguments);
+                            listeners: {
+                                'event1': function() {
+                                    console.log(arguments);
+                                }
                             }
                         }
-                    }]
+                    })
                 }
             }
         });

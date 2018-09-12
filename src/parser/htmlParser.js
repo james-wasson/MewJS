@@ -1,6 +1,7 @@
 import utils from './utils';
 import { typeChecker } from '../typeManager';
 import { removeStyle, addStyle, setProperty, addClass, removeClass } from '../htmlPropertyManager';
+import ProxyContext from '../proxyContext';
 
 class GetRecorder {
     constructor(value, propName, onGet) {
@@ -75,8 +76,10 @@ function GetEvalFunctionInSelf(self, evalScript, onGet) {
     keys.sort();
 
     self = ProxyContext(self);
-
-    var evalFun = Function.apply(self, keys.concat(['"use strict";\nreturn ('+evalScript+');']));
+    console.log('last');
+    console.log(self, keys.concat(['"use strict";\nreturn ('+evalScript+');']))
+    var evalFun = Function.apply(null, keys.concat(['"use strict";\nreturn ('+evalScript+');']));
+    console.log('next');
 
     return function(self, keys, evalFun) {
         var orderedValues = keys.map(k => {
@@ -191,13 +194,6 @@ function processHtmlRecursively(self, parentNode) {
                 });
             }
 
-            if (node.getAttribute("m-if")) {
-                addAttributeParser(self, node, "m-if", "bool", function(node, shouldAppend) {
-                    if (shouldAppend) setProperty(node, 'data-mew-if', true);
-                    else setProperty(node, 'data-mew-if', false);
-                });
-            }
-
             if (node.getAttribute("m-on")) {
                 addAttributeParser(self, node, "m-on", "object", function(node, eventName, fun) {
                     if (typeChecker.isFunction(fun)) {
@@ -221,8 +217,7 @@ function processHtmlRecursively(self, parentNode) {
                     if (self.$children.$components.hasOwnProperty(componentName)) {
                         var components = self.$children.$components[componentName];
                         components.forEach(compDescription => {
-                            var comp = compDescription.$definition();
-                            console.log(node);
+                            var comp = compDescription.$definition.$create();
                             node.appendChild(comp.$templateHtml.content)
                         });
                     } else {

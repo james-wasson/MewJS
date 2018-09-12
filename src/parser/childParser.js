@@ -87,8 +87,8 @@ function processChildren(childrenDef) {
                             if (rv.$listeners[eventName]) providedListeners[eventName].push(rv.$listeners[eventName]);
                             if (this.$listeners[eventName]) providedListeners[eventName].push(this.$listeners[eventName]);
                         }
-
-                        rv.$definition = rv.$definition.bind(null, {
+                        
+                        rv.$definition.$create = rv.$definition.$create.bind(rv.$definition, {
                             $props: utils.objectFilter(Object.assign({}, rv, this.$children, this), (key, value) => typeChecker.isPropObj(value)),
                             $parent: this,
                             $listeners: providedListeners                        
