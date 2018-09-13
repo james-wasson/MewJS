@@ -1,5 +1,6 @@
 import utils from './utils';
 import { typeChecker, typeSafePropGetter } from '../typeManager';
+import isVarName from 'is-var-name';
 import Prop from '../prop';
 
 function definePropOnSelf(self, prop, value) {
@@ -38,11 +39,17 @@ function CreateProps(propDescriptors) {
     var props = {};
     for (name in propDescriptors) {
         if (propDescriptors.hasOwnProperty(name)) {
+            var hasError = false;
             var propDescript = propDescriptors[name];
             if (!typeChecker.isObject(propDescript)) {
-                console.warn('Property must be of type object to be processed.');
-                continue;
+                console.warn('Property must be of type object to be processed, Property: ', propDescript);
+                hasError = true;
             }
+            if (!isVarName(name)) {
+                console.error('Prop name must be a valid javascript variable name, Name: ', name);
+                hasError = true;
+            }
+            if (hasError) continue;
             if (typeChecker.isPropObj(propDescript)) {
                 props[name] = propDescript;
                 continue;

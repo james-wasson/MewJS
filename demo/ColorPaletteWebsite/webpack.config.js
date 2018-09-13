@@ -5,13 +5,11 @@ const isProd = false;
 
 module.exports = {
     mode: isProd ? "production" : "development", // no defaults
-    entry: {
-        app: './src/index.js'
-    },
+    entry: path.resolve(__dirname, './src/index.js'),
     devServer: {
-        contentBase: './dist',
+        contentBase: path.resolve(__dirname, './dist'),
         hot: true,
-        port: 8080,
+        port: 9000,
         headers: {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
@@ -23,9 +21,7 @@ module.exports = {
     ],
     output: {
         filename: 'bundle.js',
-        path: path.resolve(__dirname, 'dist'),
-        library: 'Mew',
-        libraryTarget: 'umd'
+        path: path.resolve(__dirname, './dist'),
     },
     optimization: {
         minimize: isProd

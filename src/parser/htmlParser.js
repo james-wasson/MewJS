@@ -5,29 +5,28 @@ import ProxyContext from '../proxyContext';
 
 class GetRecorder {
     constructor(value, propName, onGet) {
-        var rv;
         var self = this;
 
         this.value = value;
         this.onGet = typeChecker.isFunction(onGet) ? onGet : null;
         this.propName = propName;
 
+        this.$className = 'GetRecorder'; // helps the type checker
+
         var baseValue = this.$getValue();
 
         if (typeChecker.isFunction(baseValue)) {
-            rv = new Proxy(baseValue, {
+            return new Proxy(baseValue, {
                 apply: (target, thisArg, argumentsList) => {
                     self.onGet();
                     return target.apply(thisArg || self, argumentsList);
                 },
                 $getValue: (getPropValue) => self.$getValue(getPropValue),
-                $setValue: (value) => self.$setValue(value)
+                $setValue: (value) => self.$setValue(value),
+                $className: 'GetRecorder' // helps the type checker
             });
-            // important so the type checker can work
-            rv.constructor = { name: 'GetRecorder' };
-            return rv;
         } else if (typeChecker.isObject(baseValue)) {
-            rv = new Proxy(this, {
+            return new Proxy(this, {
                 get: (obj, prop) => {
                     obj.onGet();
                     return obj.$getValue()[prop];
@@ -36,11 +35,9 @@ class GetRecorder {
                     obj.$setValue(value)[prop];
                 },
                 $getValue: (getPropValue) => self.$getValue(getPropValue),
-                $setValue: (value) => self.$setValue(value)
+                $setValue: (value) => self.$setValue(value),
+                $className: 'GetRecorder' // helps the type checker
             });
-            // important so the type checker can work
-            rv.constructor = { name: 'GetRecorder' };
-            return rv;
         }
     }
 
@@ -76,10 +73,7 @@ function GetEvalFunctionInSelf(self, evalScript, onGet) {
     keys.sort();
 
     self = ProxyContext(self);
-    console.log('last');
-    console.log(self, keys.concat(['"use strict";\nreturn ('+evalScript+');']))
     var evalFun = Function.apply(null, keys.concat(['"use strict";\nreturn ('+evalScript+');']));
-    console.log('next');
 
     return function(self, keys, evalFun) {
         var orderedValues = keys.map(k => {
@@ -88,7 +82,7 @@ function GetEvalFunctionInSelf(self, evalScript, onGet) {
             return self[k];
         });
 
-        return evalFun.apply(self, orderedValues);
+        return evalFun.apply(null, orderedValues);
     }.bind(null, self, keys, evalFun)
 }
 

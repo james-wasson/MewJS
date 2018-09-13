@@ -6,8 +6,8 @@
         var childComp = new MewJS.Component({
             parent: {
                 props: { 
-                    'prop2Child': 'prop2-rename',
-                    'p-sub-bottom': 'p-sub-bottom'
+                    'prop2Child': 'prop2Rename',
+                    'pSubBottom': 'pSubBottom'
                 },
                 emit: ['event1']
             },
@@ -18,7 +18,7 @@
                         type: 'number',
                     }
                 },
-                template: `<p m-on="{ click: function() { this.$emit.event1('uno', 'dos'); } }">c1</p>`,
+                template: `<p m-on="{ click: function() { $emit.event1('uno', 'dos'); } }">c1</p>`,
                 watchers: {
                     'prop2Child': function(newVal, oldVal) {
                         this.$emit.event1('uno', 'dos');
@@ -69,7 +69,7 @@
             },
             children: {
                 props: {
-                    'm-sub-top': {
+                    'mSubTop': {
                         value: 2,
                         type: 'number'
                     }
@@ -79,11 +79,11 @@
                         return { 
                             definition: childComp,
                             props: {
-                                'p-sub-bottom': {
+                                'pSubBottom': {
                                     value: 4,
                                     type: 'number'
                                 },
-                                'prop2-rename': 'prop2'
+                                'prop2Rename': 'prop2'
                             },
                             listeners: {
                                 'event1': function() {
