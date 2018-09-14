@@ -1,10 +1,8 @@
 import {Component, MountComponent} from './parser/parser';
-
-if (window.MewJS) throw new Error("MewJS already defined on the window");
+import ComputedProp from './computedProp';
 
 export {
     Component,
-    MountComponent
+    MountComponent,
+    ComputedProp
 }
-
-export default Component;

@@ -2,6 +2,7 @@ import childParser from './childParser';
 import parentParser from './parentParser';
 import selfParser from './selfParser';
 import htmlParser from './htmlParser';
+import hooksParser from './hooksParser';
 import proxyContext from '../proxyContext';
 import { typeChecker } from '../typeManager';
 
@@ -11,6 +12,7 @@ class Component {
             console.warn('The component descriptor must be of type "object"');
             compDescriptor = {};
         }
+        this.$className = "Component";
         this.$slots = {};
         this.$emit = {};
         this.$parent = null;
@@ -21,22 +23,31 @@ class Component {
             $components: {},
         }
         this.$htmlEvents = {};
+        this.$hooks = {
+            $created: null,
+            $mounted: null
+        }
 
         if (!typeChecker.isObject(compDescriptor.self)) {
             throw new Error('Components must have self defined of type "object".');
         }
 
         if (compDescriptor.hasOwnProperty('parent'))
-            (parentParser.bind(this))(compDescriptor.parent, parentScope);
+            parentParser.call(this, compDescriptor.parent, parentScope);
 
-        (selfParser.bind(this))(compDescriptor.self);
+        selfParser.call(this, compDescriptor.self);
 
         if (compDescriptor.hasOwnProperty('children'))
-            (childParser.bind(this))(compDescriptor.children);
+            childParser.call(this, compDescriptor.children);
 
-            htmlParser.bind(this)();
+        for (var propName in this) 
+            if (this.hasOwnProperty(propName) && typeChecker.isComputedProp(this[propName]))
+                this[propName].$initalize(this);
 
-        this.$className = "Component";
+        if (compDescriptor.hasOwnProperty('hooks'))
+            hooksParser.call(this, compDescriptor.hooks);
+        
+        htmlParser.bind(this)();
     }
 }
 
@@ -48,8 +59,19 @@ class ComponentFactory {
 
     $create(parentScope) {
         var component = new Component(this.descriptor, parentScope);
-        return proxyContext(component); // passing in parentProps freezes them only in this context
+        var proxy = proxyContext(component);
+
+        if (component.$hooks.$created) 
+            component.$hooks.$created.call(proxy);
+
+        return proxy;
     }
+}
+
+function recurseThroughComponentTree(root, callBack) {
+    callBack(root);
+    if (root.$children && root.$children.$activeComponents)
+        root.$children.$activeComponents.forEach(c => recurseThroughComponentTree(c, callBack));
 }
 
 function MountComponent(nodeOrId, componentFactory) {
@@ -63,9 +85,16 @@ function MountComponent(nodeOrId, componentFactory) {
     
     if (typeChecker.isElementNode(nodeOrId)) {
         var node = nodeOrId;
-        node.appendChild(componentFactory.$create().$templateHtml.content);
+        var instance = componentFactory.$create();
+        node.appendChild(instance.$templateHtml.content);
+        // calls the mounted hook
+        recurseThroughComponentTree(instance, comp => {
+            if (comp.$hooks.$mounted) comp.$hooks.$mounted.call(instance);
+        });
+        return instance;
     } else {
         console.error('mount point expects valid html id or node type');
+        return null;
     }
 }
 

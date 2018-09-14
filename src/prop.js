@@ -3,7 +3,7 @@ import { typeChecker, isType } from './typeManager';
 /**
  * Stores the name, value, and any dependencies for the property
  * Assumes name is of type string
- * Value can be of nay type
+ * Value can be of any type
  * Assumes all dependencies are either of tpye function or impliment the method ".run()"
  * It is probably easier to use the "createProps()" function
  */
@@ -24,7 +24,7 @@ class Prop {
     }
 
     $runDepsUpdate(newVal, oldVal) {
-        if (this.type === 'prop') {
+        if (typeChecker.isProp(this.value)) {
             this.value.$runDepsUpdate(newVal, oldVal);
         } else {
             for (var i = this.deps.length - 1; i > -1; i -= 1) {
@@ -40,7 +40,7 @@ class Prop {
     }
 
     $addDep(dep) {
-        if (this.type === 'prop') {
+        if (typeChecker.isProp(this.value)) {
             this.value.$addDep(dep);
         } else {
             this.deps.push(dep);
@@ -48,7 +48,7 @@ class Prop {
     }
 
     $removeDep(checker) {
-        if (this.type === 'prop') {
+        if (typeChecker.isProp(this.value)) {
             this.value.$removeDep(dep);
         } else {
             if (typeChecker.isFunction(checker)) {
@@ -68,9 +68,9 @@ class Prop {
         }
     }
 
-    $setValue(newVal, runUpdate) {
-        if (!this.freezeValue) {
-            if (this.type === 'prop' && !typeChecker.isPropObj(newVal)) {
+    $setValue(newVal, runUpdate, ignoreFrozen) {
+        if (!this.freezeValue || ignoreFrozen === true) {
+            if (typeChecker.isProp(this.value) && !typeChecker.isProp(newVal)) {
                 return this.value.setValue(newVal, runUpdate);
             } else {
                 if (!isType(this.type, newVal, true)) {
@@ -78,14 +78,14 @@ class Prop {
                     return;
                 }
                 // go down the props tree to get the lowest value that is not a prop
-                if (typeChecker.isPropObj(newVal)) {
-                    while (typeChecker.isPropObj(newVal.value)) {
+                if (typeChecker.isProp(newVal)) {
+                    while (typeChecker.isProp(newVal.value)) {
                         newVal = newVal.value;
                     }
                 }
                 var oldVal = this.value;
                 this.value = newVal;
-                if (oldVal !== newVal && (!typeChecker.isBool(runUpdate) || runUpdate)) 
+                if (oldVal !== newVal && (typeChecker.isBool(runUpdate) ? runUpdate : true)) 
                     this.$runDepsUpdate(newVal, oldVal);
                 return newVal;
             }
@@ -95,7 +95,7 @@ class Prop {
     }
 
     $getValue() {
-        if (this.type === 'prop') {
+        if (typeChecker.isProp(this.value)) {
             return this.value.$getValue();
         }
         return this.value;

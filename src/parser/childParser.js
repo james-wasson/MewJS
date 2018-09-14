@@ -89,7 +89,7 @@ function processChildren(childrenDef) {
                         }
                         
                         rv.$definition.$create = rv.$definition.$create.bind(rv.$definition, {
-                            $props: utils.objectFilter(Object.assign({}, rv, this.$children, this), (key, value) => typeChecker.isPropObj(value)),
+                            $props: utils.objectFilter(Object.assign({}, rv, this.$children, this), (key, value) => typeChecker.isProp(value)),
                             $parent: this,
                             $listeners: providedListeners                        
                         });

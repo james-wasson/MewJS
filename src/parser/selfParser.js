@@ -34,7 +34,7 @@ function processSelf(selfDef) {
                 if (watchers.hasOwnProperty(propName)) {
                     if (!typeChecker.isFunction(watchers[propName])) {
                         console.error('Watcher must be of type "function".');
-                    } else if (!typeChecker.isPropObj(this[propName])) {
+                    } else if (!typeChecker.isProp(this[propName])) {
                         console.error('Cannot watch "'+propName+'" because it is not a processed prop.');                        
                     } else {
                         var watchFun = watchers[propName];

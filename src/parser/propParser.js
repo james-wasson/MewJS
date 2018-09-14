@@ -5,14 +5,14 @@ import Prop from '../prop';
 
 function definePropOnSelf(self, prop, value) {
     if (self.hasOwnProperty(prop)) {
-        if (typeChecker.isPropObj(self[prop])) {
+        if (typeChecker.isProp(self[prop])) {
             console.warn('Redefinging prop "'+prop+'"');
         } else {
             console.error("Cannot redefine a public Api.");
             return;
         }
     }
-    if(!value || !typeChecker.isPropObj(value)) {
+    if(!value || !typeChecker.isProp(value)) {
         console.error("Value must be of type prop.");
         return;
     }
@@ -50,7 +50,7 @@ function CreateProps(propDescriptors) {
                 hasError = true;
             }
             if (hasError) continue;
-            if (typeChecker.isPropObj(propDescript)) {
+            if (typeChecker.isProp(propDescript)) {
                 props[name] = propDescript;
                 continue;
             }
@@ -119,7 +119,6 @@ function propParser(processOption, self, propsObj, scope = {}, propCallback = nu
                         if (propCallback) propCallback(self, prop, value);
                     } else {
                         console.error('Prop "' + propsObj[prop] + '" defined as "'+ prop +'" but definition not found.');
-                        return false;
                     }
                 }
             } else {

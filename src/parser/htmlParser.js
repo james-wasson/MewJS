@@ -1,167 +1,98 @@
 import utils from './utils';
 import { typeChecker } from '../typeManager';
 import { removeStyle, addStyle, setProperty, addClass, removeClass } from '../htmlPropertyManager';
-import ProxyContext from '../proxyContext';
+import { GetEvalFunctionInSelf } from '../getRecorder';
 
-class GetRecorder {
-    constructor(value, propName, onGet) {
-        var self = this;
-
-        this.value = value;
-        this.onGet = typeChecker.isFunction(onGet) ? onGet : null;
-        this.propName = propName;
-
-        this.$className = 'GetRecorder'; // helps the type checker
-
-        var baseValue = this.$getValue();
-
-        if (typeChecker.isFunction(baseValue)) {
-            return new Proxy(baseValue, {
-                apply: (target, thisArg, argumentsList) => {
-                    self.onGet();
-                    return target.apply(thisArg || self, argumentsList);
-                },
-                $getValue: (getPropValue) => self.$getValue(getPropValue),
-                $setValue: (value) => self.$setValue(value),
-                $className: 'GetRecorder' // helps the type checker
-            });
-        } else if (typeChecker.isObject(baseValue)) {
-            return new Proxy(this, {
-                get: (obj, prop) => {
-                    obj.onGet();
-                    return obj.$getValue()[prop];
-                },
-                set: (obj, prop, value) => {
-                    obj.$setValue(value)[prop];
-                },
-                $getValue: (getPropValue) => self.$getValue(getPropValue),
-                $setValue: (value) => self.$setValue(value),
-                $className: 'GetRecorder' // helps the type checker
-            });
-        }
-    }
-
-    $getValue(getPropValue) {
-        if (getPropValue !== false && typeChecker.isPropObj(this.value))
-            return this.value.$getValue();
-        return this.value;
-    }
-
-    $setValue(value) {
-        if (typeChecker.isPropObj(this.value)) {
-            this.value.$setValue(value);
-        } else {
-            this.value = value;
-        }
-    }
-
-    [Symbol.toPrimitive]() {
-        this.onGet();
-        return this.$getValue();
-    }
-
-    valueOf() {
-        this.onGet();
-        return this.$getValue();
-    }
-}
-
-function GetEvalFunctionInSelf(self, evalScript, onGet) {
-    self = Object.assign({},self);
-    // we must maintain a sorted array in this case
-    var keys = Object.keys(self); 
-    keys.sort();
-
-    self = ProxyContext(self);
-    var evalFun = Function.apply(null, keys.concat(['"use strict";\nreturn ('+evalScript+');']));
-
-    return function(self, keys, evalFun) {
-        var orderedValues = keys.map(k => {
-            if (self.$props(k)) 
-                return new GetRecorder(self.$props(k), k, (function(propName, prop, onGet) { onGet(propName, prop); }).bind(self, k, self.$props(k), onGet));
-            return self[k];
-        });
-
-        return evalFun.apply(null, orderedValues);
-    }.bind(null, self, keys, evalFun)
-}
-
-function convertToActualParserValue(value, addDeps) {
-    if (typeChecker.isGetRecorderObj(value)) {
-        var valueOfWrapper = value.$getValue(false);
-        // if it is a prop we need to be watching it
-        if (typeChecker.isPropObj(valueOfWrapper)) {
-            addDeps(value.propName, valueOfWrapper);
-            return valueOfWrapper.$getValue();
-        } else { // else just perform the action because it is a static object
-            return valueOfWrapper;
-        }
-    } else {
-        return value; 
-    }
-} 
-
-function attributeObjectParser(evalObj, addDeps, performAction, node, attribute) {
+function attributeObjectParser(evalObj, performAction, node, attribute) {
     if (typeChecker.isObject(evalObj)) {
         for (var key in evalObj) {
             if (evalObj.hasOwnProperty(key)) {
-                var value = convertToActualParserValue(evalObj[key], addDeps);
-                performAction(node, key, value, attribute);
+                performAction(node, key, evalObj[key], attribute);
             }
         }
     } else if (!typeChecker.isUndef(evalObj, true)) {
-        console.error(attribute + " is returning something other than object undefined or null on node: ", node);
+        console.error('Attribute: "' + attribute + '" is returning something other than object undefined or null on node: ', node);
     }
 }
 
-function attributeBoolParser(evalObj, addDeps, performAction, node, attribute) {
-    var value = convertToActualParserValue(evalObj, addDeps);
-    if (value) {
+function attributeBoolParser(evalObj, performAction, node, attribute) {
+    if (evalObj) {
         performAction(node, true, attribute);
     } else {
         performAction(node, false, attribute);
     }
 }
 
-function attributeStringParser(evalObj, addDeps, performAction, node, attribute) {
-    var value = convertToActualParserValue(evalObj, addDeps);
-    if (typeChecker.isString(value)) {
-        performAction(node, value, attribute);
+function attributeStringParser(evalObj, performAction, node, attribute) {
+    if (typeChecker.isString(evalObj)) {
+        performAction(node, evalObj, attribute);
     } else {
         console.error(attribute + " is returning sometthing other than type 'string' on node: ", node);
     }
 }
 
 function addAttributeParser(self, node, attribute, evalType, performAction) {
-    (function(self, node) {
+    var addDeps = function(propName, prop) {
+        if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.node === node && dep.attribute === attribute))
+            prop.$addDep({ node: node, attribute: attribute, $run: performEval});
+    }
+
+    var getterFun = GetEvalFunctionInSelf(self, node.getAttribute(attribute), addDeps);
+    node.removeAttribute(attribute); // clean up after ourselves
+
+    var performEval = function() {
+        var evalObj = getterFun();
+        switch(evalType.toLowerCase()) {
+            case "object":
+                return attributeObjectParser(evalObj, performAction, node, attribute);
+            case "bool":
+            case "boolean":
+                return attributeBoolParser(evalObj, performAction, node, attribute);
+            case "string":
+                return attributeStringParser(evalObj, performAction, node, attribute);
+        }
+    };
+    performEval();
+}
+
+function stringParser(evalObj, performAction, node) {
+    if (typeChecker.isString(evalObj)) {
+        performAction(node, evalObj);
+    } else {
+        console.error('Template: "'+evalObj+'" is returning sometthing other than type "string" on node: ', node);
+    }
+}
+
+function addInlineTextParser(self, node, text, performAction) {
         var addDeps = function(propName, prop) {
-            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.node === node && dep.attribute === attribute))
-                prop.$addDep({ node: node, attribute: attribute, $run: performEval});
+            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.node === node && dep.attribute === 'text'))
+                prop.$addDep({ node: node, attribute: 'text', $run: performEval});
         }
 
-        var getterFun = GetEvalFunctionInSelf(self, node.getAttribute(attribute), addDeps);
-        node.removeAttribute(attribute); // clean up after ourselves
+        var getterFun = GetEvalFunctionInSelf(self, '`'+ text + '`', addDeps);
 
         var performEval = function() {
             var evalObj = getterFun();
-            switch(evalType.toLowerCase()) {
-                case "object":
-                    return attributeObjectParser(evalObj, addDeps, performAction, node, attribute);
-                case "bool":
-                case "boolean":
-                    return attributeBoolParser(evalObj, addDeps, performAction, node, attribute);
-                case "string":
-                    return attributeStringParser(evalObj, addDeps, performAction, node, attribute);
-            }
+            return stringParser(evalObj, performAction, node);
         };
         performEval();
-    }(self, node))
 }
 
 function processHtmlRecursively(self, parentNode) {
     for (var node of parentNode.childNodes) {
         if (typeChecker.isTextNode(node)) {
-            //console.log(node) TEXT NODES GO HERE
+            var litRegex = /{{([^}}]+)}}/g;// includes ${} template literal syntax
+            var text = node.nodeValue;
+            var found = text.match(litRegex);
+            if (found && found.length > 0) {
+                // replaces the matches with template literal syntax
+                for (var f of found) {
+                    text = text.replace(f, '$' + f.trim().substr(1, f.length - 2));
+                }
+                addInlineTextParser(self, node, text, function(node, parsedText) {
+                    node.nodeValue = parsedText;
+                });
+            }
         } else {
             if (node.getAttribute("m-bind:class")) {
                 addAttributeParser(self, node, "m-bind:class", "object", function(node, className, value) {
@@ -210,10 +141,15 @@ function processHtmlRecursively(self, parentNode) {
                 addAttributeParser(self, node, "m-comp", "string", function(node, componentName) {
                     if (self.$children.$components.hasOwnProperty(componentName)) {
                         var components = self.$children.$components[componentName];
-                        components.forEach(compDescription => {
-                            var comp = compDescription.$definition.$create();
-                            node.appendChild(comp.$templateHtml.content)
-                        });
+                        if (!typeChecker.isArray(components)) components = [components];
+                        if (!self.$children.$activeComponents) self.$children.$activeComponents = [];
+                        self.$children.$activeComponents = self.$children.$activeComponents.concat(
+                            components.map(compDescription => {
+                                var comp = compDescription.$definition.$create();
+                                node.appendChild(comp.$templateHtml.content);
+                                return comp;
+                            })
+                        );
                     } else {
                         console.error('Component "'+componentName+'" not found for node: ', node);
                     }

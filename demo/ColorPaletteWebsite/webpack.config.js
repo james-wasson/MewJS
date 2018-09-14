@@ -5,7 +5,10 @@ const isProd = false;
 
 module.exports = {
     mode: isProd ? "production" : "development", // no defaults
-    entry: path.resolve(__dirname, './src/index.js'),
+    entry: {
+        app: path.resolve(__dirname, './src/index.js'),
+        style: path.resolve(__dirname, './src/style.less')
+    },
     devServer: {
         contentBase: path.resolve(__dirname, './dist'),
         hot: true,
@@ -20,10 +23,27 @@ module.exports = {
         new webpack.HotModuleReplacementPlugin()
     ],
     output: {
-        filename: 'bundle.js',
+        filename: '[name].bundle.js',
         path: path.resolve(__dirname, './dist'),
     },
     optimization: {
         minimize: isProd
+    },
+    resolve: {
+        alias: {
+            'Mew': path.resolve(__dirname, '../../dist/bundle.js')  // <-- When you build or restart dev-server, you'll get an error if the path to your utils.js file is incorrect.
+        }
+    },
+    module: {
+        rules: [{
+            test: /\.less$/,
+            use: [{
+                loader: 'style-loader' // creates style nodes from JS strings
+            }, {
+                loader: 'css-loader' // translates CSS into CommonJS
+            }, {
+                loader: 'less-loader' // compiles Less to CSS
+            }]
+        }]
     }
 };

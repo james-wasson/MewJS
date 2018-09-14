@@ -9,7 +9,7 @@ function createTypeChecker(checker) {
 
 var typeChecker = {
     types: ['any', 'bool', 'boolean', 'array', 'string', 'object', 'function', 'symbol', 'int', 'float',
-            'number', 'undefined', 'prop', 'component', 'component-factory', 'get-recorder', 'element-node', 'text-node'],
+            'number', 'undefined', 'prop', 'component', 'component-factory', 'get-recorder', 'proxy-context', 'element-node', 'text-node'],
     isUndef: (obj) => typeof obj === 'undefined',
     isString: createTypeChecker((obj) => typeof obj === 'string'),
     isObject: createTypeChecker((obj) => typeof obj === 'object'),
@@ -20,10 +20,13 @@ var typeChecker = {
     isNumber: createTypeChecker((obj) => !isNaN(obj)),
     isInt: createTypeChecker((obj) => Number(obj) === obj && obj % 1 === 0),
     isFloat: createTypeChecker((obj) => Number(obj) === obj && obj % 1 !== 0),
-    isPropObj: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'Prop'),
-    isComponentObj: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'Component'),
+    isPropStrict: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'Prop'),
+    isProp: createTypeChecker((obj) => typeChecker.isPropStrict(obj) || typeChecker.isComputedProp(obj)),
+    isComponent: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'Component'),
     isComponentFactory: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'ComponentFactory'),
-    isGetRecorderObj: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'GetRecorder'),
+    isGetRecorder: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'GetRecorder'),
+    isComputedProp: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'ComputedProp'),
+    isProxyContext: createTypeChecker((obj) => typeChecker.isObject(obj) && obj.$className === 'ProxyContext'),
     isElementNode: createTypeChecker((obj) => typeChecker.isObject(HTMLElement) ? 
                                         obj instanceof HTMLElement : //DOM2
                                         typeChecker.isObject(obj) && obj.nodeType === Node.ELEMENT_NODE && typeChecker.isString(obj.nodeName)),
@@ -57,13 +60,17 @@ var isType = function(type, obj, nullable = false) {
         case 'boolean':
             return typeChecker.isBool(obj, nullable);
         case 'prop':
-            return typeChecker.isPropObj(obj, nullable);
+            return typeChecker.isProp(obj, nullable);
+        case 'computed-prop':
+            return typeChecker.isComputedProp(obj, nullable);
         case 'component':
-            return typeChecker.isComponentObj(obj, nullable);
+            return typeChecker.isComponent(obj, nullable);
         case 'component-factory':
             return typeChecker.isComponentFactory(obj, nullable);
         case 'get-recorder':
-            return typeChecker.isGetRecorderObj(obj, nullable);
+            return typeChecker.isGetRecorder(obj, nullable);
+        case 'proxy-context':
+            return typeChecker.isProxyContext(obj, nullable);
         case 'element-node':
             return typeChecker.isElementNode(obj, nullable);
         case 'text-node':

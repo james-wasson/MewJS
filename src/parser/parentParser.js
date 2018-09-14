@@ -5,7 +5,7 @@ import { PROCESS_PROP_OPTIONS } from './propParser';
 import Prop from '../prop';
 
 function freezePropOnSelf(self, prop) {
-    if (!typeChecker.isPropObj(self[prop])) {
+    if (!typeChecker.isProp(self[prop])) {
         console.error('Cannot freeze prop that is not constructed by "Prop"');
         return;
     }
@@ -83,7 +83,7 @@ function processParent(parentDef, parentScopeAccess) {
         }
     }
 
-    if (parentScopeAccess && parentScopeAccess.hasOwnProperty('$parent') && typeChecker.isComponentObj(parentScopeAccess.$parent)) {
+    if (parentScopeAccess && parentScopeAccess.hasOwnProperty('$parent') && typeChecker.isComponent(parentScopeAccess.$parent)) {
         this.$parent = parentScopeAccess.$parent;
     }
 }
