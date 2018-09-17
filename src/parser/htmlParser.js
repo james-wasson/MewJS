@@ -2,6 +2,7 @@ import utils from './utils';
 import { typeChecker } from '../typeManager';
 import { removeStyle, addStyle, setProperty, addClass, removeClass } from '../htmlPropertyManager';
 import { GetEvalFunctionInSelf } from '../getRecorder';
+import { callMountedHooks } from '../callHooks';
 
 function attributeObjectParser(evalObj, performAction, node, attribute) {
     if (typeChecker.isObject(evalObj)) {
@@ -17,15 +18,15 @@ function attributeObjectParser(evalObj, performAction, node, attribute) {
 
 function attributeBoolParser(evalObj, performAction, node, attribute) {
     if (evalObj) {
-        performAction(node, true, attribute);
+        return performAction(node, true, attribute);
     } else {
-        performAction(node, false, attribute);
+        return performAction(node, false, attribute);
     }
 }
 
 function attributeStringParser(evalObj, performAction, node, attribute) {
     if (typeChecker.isString(evalObj)) {
-        performAction(node, evalObj, attribute);
+        return performAction(node, evalObj, attribute);
     } else {
         console.error(attribute + " is returning sometthing other than type 'string' on node: ", node);
     }
@@ -33,8 +34,10 @@ function attributeStringParser(evalObj, performAction, node, attribute) {
 
 function addAttributeParser(self, node, attribute, evalType, performAction) {
     var addDeps = function(propName, prop) {
-        if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.node === node && dep.attribute === attribute))
-            prop.$addDep({ node: node, attribute: attribute, $run: performEval});
+        if (typeChecker.isProp(prop)) {
+            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.node === node && dep.attribute === attribute))
+                prop.$addDep({ node: node, attribute: attribute, $run: performEval});
+        }
     }
 
     var getterFun = GetEvalFunctionInSelf(self, node.getAttribute(attribute), addDeps);
@@ -50,6 +53,8 @@ function addAttributeParser(self, node, attribute, evalType, performAction) {
                 return attributeBoolParser(evalObj, performAction, node, attribute);
             case "string":
                 return attributeStringParser(evalObj, performAction, node, attribute);
+            case "any":
+                return performAction(node, evalObj, attribute);
         }
     };
     performEval();
@@ -63,23 +68,51 @@ function stringParser(evalObj, performAction, node) {
     }
 }
 
-function addInlineTextParser(self, node, text, performAction) {
-        var addDeps = function(propName, prop) {
-            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.node === node && dep.attribute === 'text'))
-                prop.$addDep({ node: node, attribute: 'text', $run: performEval});
+var PLACE_HOLDER_COMMENT = () => utils.getDocument('<!-----   -----!>').content.childNodes[0];
+function addInlineTextParser(self, node, text) {
+    var guid = utils.uuidv4();
+    var newNode = utils.getDocument('<span m-text-render-'+guid+'></span>').content.childNodes[0];
+    node.parentNode.replaceChild(newNode, node);
+    var nodeList = [newNode];
+    var addDeps = function(propName, prop) {
+        if (typeChecker.isProp(prop)) {
+            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.guid === guid && dep.attribute === 'text'))
+                prop.$addDep({ guid: guid, attribute: 'text', $run: performEval});
         }
+    }
 
-        var getterFun = GetEvalFunctionInSelf(self, '`'+ text + '`', addDeps);
+    var getterFun = GetEvalFunctionInSelf(self, '`'+ text + '`', addDeps);
 
-        var performEval = function() {
-            var evalObj = getterFun();
-            return stringParser(evalObj, performAction, node);
-        };
-        performEval();
+    var performEval = function() {
+        var evalObj = getterFun();
+        var first = nodeList.shift();
+        var parentNode = first.parentNode;
+        var placeholder = PLACE_HOLDER_COMMENT();
+        parentNode.replaceChild(placeholder, first);
+        nodeList.forEach(node => parentNode.removeChild(node));
+        nodeList = [];
+        // reverse because there is no insert after function
+        var elements = [...utils.getDocument(evalObj).content.childNodes].reverse();
+
+        if (elements.length > 1) {
+            var first = elements.shift();
+            parentNode.replaceChild(first, placeholder);
+            nodeList = [first];
+            elements.forEach(element => {
+                parentNode.insertBefore(element, nodeList[nodeList.length - 1]);
+                nodeList.push(element);
+            });
+        } else {
+            nodeList = [placeholder];
+        }
+    };
+
+    return performEval;
 }
 
 function processHtmlRecursively(self, parentNode) {
     for (var node of parentNode.childNodes) {
+        self.$nodes.push(node);
         if (typeChecker.isTextNode(node)) {
             var litRegex = /{{([^}}]+)}}/g;// includes ${} template literal syntax
             var text = node.nodeValue;
@@ -89,11 +122,9 @@ function processHtmlRecursively(self, parentNode) {
                 for (var f of found) {
                     text = text.replace(f, '$' + f.trim().substr(1, f.length - 2));
                 }
-                addInlineTextParser(self, node, text, function(node, parsedText) {
-                    node.nodeValue = parsedText;
-                });
+                self.$_onMounted.push(addInlineTextParser(self, node, text));
             }
-        } else {
+        } else if (typeChecker.isElementNode(node)) {
             if (node.getAttribute("m-bind:class")) {
                 addAttributeParser(self, node, "m-bind:class", "object", function(node, className, value) {
                     if (value) addClass(node, className);
@@ -123,13 +154,13 @@ function processHtmlRecursively(self, parentNode) {
                 addAttributeParser(self, node, "m-on", "object", function(node, eventName, fun) {
                     if (typeChecker.isFunction(fun)) {
                         if (!self.$htmlEvents[node]) self.$htmlEvents[node] = [];
-                        if (!self.$htmlEvents[node].some(p => p.eventName === eventName && p.action === fun)) {
+                        if (!self.$htmlEvents[node].some(p => p.eventName === eventName && (p.action === fun || p.action.toString() === fun.toString()))) {
                             self.$htmlEvents[node].push({
                                 eventName: eventName,
                                 node: node,
                                 action: fun
                             });
-                            node.addEventListener(eventName, fun);
+                            node.addEventListener(eventName, fun.bind(self.$proxy));
                         }
                     } else {
                         console.error("m-on events expect type of function as return value for an event");
@@ -138,20 +169,46 @@ function processHtmlRecursively(self, parentNode) {
             }
 
             if (node.getAttribute("m-comp")) {
-                addAttributeParser(self, node, "m-comp", "string", function(node, componentName) {
-                    if (self.$children.$components.hasOwnProperty(componentName)) {
-                        var components = self.$children.$components[componentName];
-                        if (!typeChecker.isArray(components)) components = [components];
-                        if (!self.$children.$activeComponents) self.$children.$activeComponents = [];
-                        self.$children.$activeComponents = self.$children.$activeComponents.concat(
-                            components.map(compDescription => {
-                                var comp = compDescription.$definition.$create();
-                                node.appendChild(comp.$templateHtml.content);
-                                return comp;
-                            })
-                        );
-                    } else {
-                        console.error('Component "'+componentName+'" not found for node: ', node);
+                addAttributeParser(self, node, "m-comp", "any", function(node, componentNames) {
+                    // remove previous active components for this node
+                    self.$children.$activeComponents = self.$children.$activeComponents.filter(active => {
+                        if (active.$parentNode === node) {
+                            node.removeChild(active.$childNode); // remove the component node
+                            return false; // filter the $activeComponent out
+                        }
+                        return true;
+                    });
+                    if (!typeChecker.isArray(componentNames)) componentNames = [componentNames];
+                    for (var componentName of componentNames) {
+                        if (typeChecker.isString(componentName) && self.$children.$components.hasOwnProperty(componentName)) {
+                            var components = self.$children.$components[componentName];
+
+                            if (!typeChecker.isArray(components)) components = [components];
+                            // add new active componenets for this node
+                            self.$children.$activeComponents = self.$children.$activeComponents.concat(
+                                components.reduce((accumulator, compDescription) => {
+                                    var comp = compDescription.$definition.$create(node);
+                                    var childNodes = [...comp.$templateHtml.content.children]; // conversion from htmlNodeList to array
+                                    accumulator = accumulator.concat(childNodes.map(child => {
+                                        if (compDescription.$prepend === true) {
+                                            node.prepend(child);
+                                        } else {
+                                            node.appendChild(child);
+                                        }
+
+                                        return {
+                                            $component: comp,
+                                            $parentNode: node,
+                                            $childNode: child
+                                        };
+                                    }));
+                                    callMountedHooks(comp);
+                                    return accumulator;
+                                }, [])
+                            );
+                        } else {
+                            console.error('Component "'+componentName+'" not found for node: ', node);
+                        }
                     }
                 });
             }

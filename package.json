@@ -6,13 +6,19 @@
   "dependencies": {
     "html-loader": "^0.5.5",
     "is-var-name": "^2.0.0",
+    "jQuery": "^1.7.4",
     "webpack": "^4.18.0"
   },
   "devDependencies": {
+    "bootstrap": "^3.3.7",
+    "bulma": "^0.7.1",
     "concurrently": "^4.0.1",
     "css-loader": "^1.0.0",
+    "file-loader": "^2.0.0",
     "less": "^3.8.1",
     "less-loader": "^4.1.0",
+    "node-sass": "^4.9.3",
+    "sass-loader": "^7.1.0",
     "style-loader": "^0.23.0",
     "webpack-cli": "^3.1.0",
     "webpack-dev-server": "^3.1.8"

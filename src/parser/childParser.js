@@ -4,12 +4,12 @@ import propParser from './propParser';
 import { PROCESS_PROP_OPTIONS } from './propParser';
 
 function processListener(listeners, callBack) {
-    if (!listeners || typeof listeners !== 'object') {
+    if (!typeChecker.isObject(listeners)) {
         console.error('Listeners on child must be in form of object.')
     } else {
         for (var eventName in listeners) {
             if (listeners.hasOwnProperty(eventName)) {
-                if (typeof listeners[eventName] !== 'function') {
+                if (!typeChecker.isFunction(listeners[eventName])) {
                     console.error('Listeners bound to an event must be of type "function"')
                 } else {
                     callBack(eventName, listeners[eventName]);
@@ -19,29 +19,28 @@ function processListener(listeners, callBack) {
     }
 }
 
-function processChildren(childrenDef) {
-    if (!childrenDef || typeof childrenDef !== 'object') {
+function processChildren(self, childrenDef) {
+    if (!typeChecker.isObject(childrenDef)) {
         console.error("Malformed children object.");
         return;
     }
 
     if (childrenDef.hasOwnProperty('props')) {
         if (Array.isArray(childrenDef.props)) {
-            propParser(PROCESS_PROP_OPTIONS.ARRAY, this.$children, childrenDef.props, this)
-        } else if (childrenDef.props && typeof childrenDef.props === 'object') {
-            propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, this.$children, childrenDef.props, this)
+            propParser(PROCESS_PROP_OPTIONS.ARRAY, self.$children, childrenDef.props, self)
+        } else if (typeChecker.isObject(childrenDef.props)) {
+            propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, self.$children, childrenDef.props, self)
         } else {
             console.error('Child props must be of type Array or Object');
         }
     }
 
-    this.$listeners = {};
     if (childrenDef.hasOwnProperty('listeners')) {
-        processListener(childrenDef.listeners, (eventName, eventHandler) => this.$listeners[eventName] = eventHandler);
+        processListener(childrenDef.listeners, (eventName, eventHandler) => self.$listeners[eventName] = eventHandler);
     }
 
     if (childrenDef.hasOwnProperty('components')) {
-        if (!childrenDef.components || typeof childrenDef.components !== 'object') {
+        if (!typeChecker.isObject(childrenDef.components)) {
             console.error('components on children must be in form of object.');
         } else {
             var components = childrenDef.components;
@@ -58,7 +57,7 @@ function processChildren(childrenDef) {
                         }
                         
                         if (comp.hasOwnProperty('definition') && typeChecker.isComponentFactory(comp.definition)) {
-                            rv.$definition = comp.definition;
+                            rv.$definition = comp.definition.$clone();
                         } else {
                             console.error('Component must have definition and it be constructed by component factory');
                             continue;
@@ -66,9 +65,9 @@ function processChildren(childrenDef) {
 
                         if (comp.hasOwnProperty('props')) {
                             if (Array.isArray(comp.props)) {
-                                propParser(PROCESS_PROP_OPTIONS.ARRAY, rv, comp.props, Object.assign({}, this.$children, this))
-                            } else if (typeof comp.props === 'object') {
-                                propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, rv, comp.props, Object.assign({}, this.$children, this));
+                                propParser(PROCESS_PROP_OPTIONS.ARRAY, rv, comp.props, Object.assign({}, self.$children, self))
+                            } else if (typeChecker.isObject(comp.props)) {
+                                propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, rv, comp.props, Object.assign({}, self.$children, self));
                             } else {
                                 console.error('Props on component expected to be of type "object" or an array');
                             }
@@ -79,24 +78,29 @@ function processChildren(childrenDef) {
                             processListener(comp.listeners, (eventName, eventHandler) => rv.$listeners[eventName] = eventHandler);
                         }
 
-                        var eventNames = Object.keys(this.$listeners).concat(Object.keys(rv.$listeners))
+                        rv.$prepend = false;
+                        if (comp.hasOwnProperty('prepend')) {
+                            rv.$prepend = typeChecker.isBool(comp.prepend) ? comp.prepend : false;
+                        }
+
+                        var eventNames = Object.keys(self.$listeners).concat(Object.keys(rv.$listeners))
                                             .filter((value, index, self) => self.indexOf(value) === index); // get unique
                         var providedListeners = {};
                         for (var eventName of eventNames) {
                             providedListeners[eventName] = [];
                             if (rv.$listeners[eventName]) providedListeners[eventName].push(rv.$listeners[eventName]);
-                            if (this.$listeners[eventName]) providedListeners[eventName].push(this.$listeners[eventName]);
+                            if (self.$listeners[eventName]) providedListeners[eventName].push(self.$listeners[eventName]);
                         }
-                        
-                        rv.$definition.$create = rv.$definition.$create.bind(rv.$definition, {
-                            $props: utils.objectFilter(Object.assign({}, rv, this.$children, this), (key, value) => typeChecker.isProp(value)),
-                            $parent: this,
+
+                        rv.$definition.$addScope(componentName, { // leave null so we can pass the element
+                            $props: utils.objectFilter(Object.assign({}, rv, self.$children, self), (key, value) => typeChecker.isProp(value)),
+                            $parent: self,
                             $listeners: providedListeners                        
                         });
 
-                        if (!this.$children.$components[componentName])
-                            this.$children.$components[componentName] = []
-                        this.$children.$components[componentName].push(rv);
+                        if (!self.$children.$components[componentName])
+                            self.$children.$components[componentName] = []
+                        self.$children.$components[componentName].push(rv);
                     }
                 }
             }

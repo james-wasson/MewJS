@@ -1,5 +1,4 @@
 import { typeChecker } from '../typeManager';
-import { proxyContext } from '../proxyContext';
 
 export default function(descriptor) {
 

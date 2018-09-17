@@ -10,9 +10,7 @@ export default class ComputedProp extends Prop {
         if (!typeChecker.isFunction(descriptor.compute)) {
             throw new Error('Computed Properties must have a function registered under "compute".');
         }
-        if ((!typeChecker.isArray(descriptor.watch) || descriptor.watch.length === 0) && descriptor.dynamic === false) {
-            console.warn('Having no dependants on a computed prop is probably not a good idea.');
-        }
+
         this.$computable = descriptor.compute;
         this.$watch = typeChecker.isArray(descriptor.watch) ? descriptor.watch : [];
         this.$dynamic = typeChecker.isBool(descriptor.dynamic) ? descriptor.dynamic : true;
@@ -44,7 +42,7 @@ export default class ComputedProp extends Prop {
     }
 
     $compute() {
-        return this.$setValue(this.$evalFunction(), true, true);
+        return this.$setValue(this.$evalFunction() || null, true, true);
     }
 } 
 

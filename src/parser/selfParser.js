@@ -3,13 +3,6 @@ import { typeChecker } from '../typeManager';
 import propParser from './propParser';
 import { PROCESS_PROP_OPTIONS } from './propParser';
 
-var getDocument = function(html) {
-    var doc = document.createElement('template');
-    doc.innerHTML = html;
-    return doc;
-}
-
-
 function processSelf(selfDef) {
     if (selfDef.hasOwnProperty('props')) {
         propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, this, selfDef.props, this)
@@ -19,7 +12,7 @@ function processSelf(selfDef) {
         if (typeChecker.isString(selfDef.template)) {
             this.$template = selfDef.template;
 
-            this.$templateHtml = getDocument(this.$template);
+            this.$templateHtml = utils.getDocument(this.$template);
         } else {
             console.error('template must be of type "string"');
         }
@@ -38,10 +31,10 @@ function processSelf(selfDef) {
                         console.error('Cannot watch "'+propName+'" because it is not a processed prop.');                        
                     } else {
                         var watchFun = watchers[propName];
-                        watchFun = watchFun.bind(this);
+                        watchFun = watchFun.bind(this.$proxy);
                         this[propName].$addDep(watchFun);
                         this.$watchers[propName] = {
-                            $dependancy: watchFun,
+                            $onchange: watchFun,
                             $prop: this[propName]
                         }
                     }

@@ -57,7 +57,7 @@ function CreateProps(propDescriptors) {
 
             var value = propDescript['value'] || null;
             var type = typeSafePropGetter('string', propDescript, 'type', 'any');
-            var shouldFreeze = typeSafePropGetter('bool', propDescript, 'shouldFreeze', false);
+            var shouldFreeze = typeSafePropGetter('bool', propDescript, 'freeze', false);
 
             // adds the prop to the prop array
             props[name] = new Prop(value, type, shouldFreeze);

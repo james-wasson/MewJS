@@ -12,11 +12,12 @@ function freezePropOnSelf(self, prop) {
     self[prop] = new Prop(self[prop], 'prop', true);
 }
 
-function processParent(parentDef, parentScopeAccess) {
+function processParent(self, parentDef, parentScopeAccess) {
     if (!parentDef || typeof parentDef !== 'object') {
         console.error("Malformed parent object.");
         return;
     }
+
     var parentScopeIsGood = parentScopeAccess && typeof parentScopeAccess === 'object';
     // pasrse the props object
     if (parentDef.hasOwnProperty('props')) {
@@ -25,12 +26,12 @@ function processParent(parentDef, parentScopeAccess) {
         } else {
             var props = parentDef.props;
             if (Array.isArray(props)) {
-                propParser(PROCESS_PROP_OPTIONS.ARRAY, this, props, parentScopeAccess.$props, function(self, prop) {
+                propParser(PROCESS_PROP_OPTIONS.ARRAY, self, props, parentScopeAccess.$props, function(self, prop) {
                     self.$inheritedProps.push(prop);
                     freezePropOnSelf(self, prop);
                 })
             } else if (typeof props === 'object') {
-                propParser(PROCESS_PROP_OPTIONS.RENAME_OBJECT, this, props, parentScopeAccess.$props, function(self, prop) { 
+                propParser(PROCESS_PROP_OPTIONS.RENAME_OBJECT, self, props, parentScopeAccess.$props, function(self, prop) { 
                     self.$inheritedProps.push(prop);
                     freezePropOnSelf(self, prop);
                 })
@@ -50,7 +51,7 @@ function processParent(parentDef, parentScopeAccess) {
                 else if (!parentScope.$slots || typeof parentScope.$slots !== 'object' || !parentScope.$slots[slot]) {
                     console.error('Slot "'+slot+'" doesn\' exist on parent');
                 } else {
-                    this.$slots[slot] = parentScope.$slots[slot];
+                    self.$slots[slot] = parentScope.$slots[slot];
                 }
             }
         }
@@ -64,18 +65,18 @@ function processParent(parentDef, parentScopeAccess) {
                 } else {
                     if (!parentScopeAccess.$listeners) parentScopeAccess.$listeners = {};
                     var listeners = parentScopeAccess.$listeners[eventName] || [];
-                    this.$emit[eventName] =  (function(listeners, eventName){
+                    self.$emit[eventName] =  (function(self, listeners){
                         var rv = function() {
                             for(var listener of listeners) {
                                 if (typeof listener === 'function')
-                                    listener.apply(arguments);
+                                    listener.apply(self.$parent.$proxy, arguments);
                                 else
                                     console.error('Listener is not of type "function"')
                             }
                         };
                         rv.eventName = eventName;
                         return rv;
-                    }.bind(this)(listeners, eventName));
+                    })(self, listeners);
                 }
             }
         } else {
@@ -84,7 +85,7 @@ function processParent(parentDef, parentScopeAccess) {
     }
 
     if (parentScopeAccess && parentScopeAccess.hasOwnProperty('$parent') && typeChecker.isComponent(parentScopeAccess.$parent)) {
-        this.$parent = parentScopeAccess.$parent;
+        self.$parent = parentScopeAccess.$parent;
     }
 }
 

@@ -7,7 +7,7 @@ module.exports = {
     mode: isProd ? "production" : "development", // no defaults
     entry: {
         app: path.resolve(__dirname, './src/index.js'),
-        style: path.resolve(__dirname, './src/style.less')
+        style: path.resolve(__dirname, './src/style.scss')
     },
     devServer: {
         contentBase: path.resolve(__dirname, './dist'),
@@ -25,17 +25,25 @@ module.exports = {
     output: {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, './dist'),
+        publicPath: 'assets/',
     },
     optimization: {
         minimize: isProd
     },
     resolve: {
         alias: {
-            'Mew': path.resolve(__dirname, '../../dist/bundle.js')  // <-- When you build or restart dev-server, you'll get an error if the path to your utils.js file is incorrect.
+            'Mew': path.resolve(__dirname, '../../dist/bundle.js'),
         }
     },
     module: {
         rules: [{
+            test: /\.css$/,
+            use: [{
+                loader: 'style-loader' // creates style nodes from JS strings
+            }, {
+                loader: 'css-loader' // translates CSS into CommonJS
+            }]
+        },{
             test: /\.less$/,
             use: [{
                 loader: 'style-loader' // creates style nodes from JS strings
@@ -43,6 +51,23 @@ module.exports = {
                 loader: 'css-loader' // translates CSS into CommonJS
             }, {
                 loader: 'less-loader' // compiles Less to CSS
+            }]
+        },{
+            test: /\.scss$/,
+            use: [{
+                loader: 'style-loader' // creates style nodes from JS strings
+            }, {
+                loader: 'css-loader' // translates CSS into CommonJS
+            }, {
+                loader: 'sass-loader', // compiles Sass to CSS
+                options: {
+                    implementation: require("node-sass")
+                }
+            }]
+        },{
+            test: /\.(png|svg|jpg|gif)$/,
+            use: [{
+                loader: 'file-loader'
             }]
         }]
     }

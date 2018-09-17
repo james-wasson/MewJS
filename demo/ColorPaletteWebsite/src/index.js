@@ -1,6 +1,7 @@
 import { Component, MountComponent, ComputedProp } from 'Mew';
-import topbar from './topbar/topbar.main';
-import innerContent from './body/inner-content';
+import navbar from './navbar';
+import footer from './footer';
+import home from './pages/home/home.main';
 
 var initColor = 'DustBeach';
 
@@ -19,78 +20,54 @@ var BaseComponent = new Component({
     },
     self: {
         props: {
+            pageName: {
+                value: 'home',
+                type: 'string'
+            },
             hasScrollbar: {
                 value: false,
                 type: 'bool'
-            },
-            pickedColorKey: {
-                value: initColor,
-                type: 'string'
-            },
-            colors: {
-                value: {
-                    'DustBeach': {
-                        'light-backgroud': '#74c0e3',
-                        'dark-background': '#242938',
-                        'link-color': '#e6ae58',
-                        'text-color': '#0d8dd7',
-                        'white': '#d8dae5',
-                        'black': '#242938'
-                    }
-                },
-                type: 'object'
-            },
-            colorKeys: new ComputedProp({
-                compute: function () { 
-                    return Object.keys(this.colors) },
-                dynamic: true
-            }),
-            pickedColor: new ComputedProp({
-                compute: function () {
-                    return this.colors[this.pickedColorKey] },
-                dynamic: true
-            })
+            }
         },
-        // here we specify topbar, body, and footer
+        // here we specify navbar, body, and footer
         template: `
-            <div id="content" m-bind:style="{ 'background-color': this.pickedColor['dark-background'] }">
-                <div id="topbar" m-comp=""></div>
+            <div id="content">
+                <div id="navbar" m-comp="'navbar'"></div>
                 <div id="body">
-                    <div m-comp="'innerContent'"></div>
+                    <div id="inner-content" m-bind:class="{ 'collapse-for-scrollbar': this.hasScrollbar }" m-comp="this.pageName">
+
+                    </div>
                 </div>
-                <div id="footer" m-comp=""></div>
+                <div id="footer" m-comp="'footer'"></div>
             </div>
         ` 
     },
     children: {
-        props: {
-            'pickedColor': 'pickedColor',
-            'colorChoices': 'colorKeys',
-            'colors': 'colors'
-        },
         components: {
-            'topbar': { 
-                definition: topbar,
+            'navbar': { 
+                definition: navbar,
                 listeners: {
-                    'changeColor': function(colorChoice) {
-                        this.changeColor(colorChoice);
+                    'changePage': function(pageChoice) {
+                        this.pageName = pageChoice;
                     }
                 },
             },
-            'innerContent': { 
-                definition: innerContent,
-                listeners: {
-                    'changeColor': function(colorChoice) {
-                        this.changeColor(colorChoice);
-                    }
-                },
-                props: ['hasScrollbar']
+            footer: {
+                definition: footer
+            },
+            'home': { 
+                definition: home,
+            },
+            'documentation': {
+                definition: navbar,
+            },
+            'examples': {
+                definition: navbar,
             }
         }
     }
 });
 
 // Mount the Component
-document.addEventListener("DOMContentLoaded", function(){
-    var comp = MountComponent('#main-mount-point', BaseComponent);
-});
+var comp = MountComponent('#main-mount-point', BaseComponent);
+console.log(comp);

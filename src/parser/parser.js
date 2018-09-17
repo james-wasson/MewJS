@@ -5,40 +5,48 @@ import htmlParser from './htmlParser';
 import hooksParser from './hooksParser';
 import proxyContext from '../proxyContext';
 import { typeChecker } from '../typeManager';
+import { callMountedHooks } from '../callHooks';
 
 class Component {
-    constructor(compDescriptor, parentScope) {
+    constructor(compDescriptor, parentScope, parentNode, componentName) {
         if (!typeChecker.isObject(compDescriptor)) {
             console.warn('The component descriptor must be of type "object"');
             compDescriptor = {};
         }
+        this.$componentName = componentName;
+        this.$proxy = proxyContext(this);
         this.$className = "Component";
+        this.$rootNode = parentNode;
         this.$slots = {};
         this.$emit = {};
         this.$parent = null;
         this.$watchers = {};
+        this.$listeners = {};
         this.$inheritedProps = [];
         this.$children = {
             $listeners: {},
             $components: {},
+            $activeComponents: []
         }
         this.$htmlEvents = {};
         this.$hooks = {
             $created: null,
             $mounted: null
         }
+        this.$nodes = [];
+        this.$_onMounted = [];
 
         if (!typeChecker.isObject(compDescriptor.self)) {
             throw new Error('Components must have self defined of type "object".');
         }
 
         if (compDescriptor.hasOwnProperty('parent'))
-            parentParser.call(this, compDescriptor.parent, parentScope);
+            parentParser.call(this, this, compDescriptor.parent, parentScope);
 
         selfParser.call(this, compDescriptor.self);
 
         if (compDescriptor.hasOwnProperty('children'))
-            childParser.call(this, compDescriptor.children);
+            childParser.call(this, this, compDescriptor.children);
 
         for (var propName in this) 
             if (this.hasOwnProperty(propName) && typeChecker.isComputedProp(this[propName]))
@@ -57,21 +65,23 @@ class ComponentFactory {
         this.$className = "ComponentFactory";
     }
 
-    $create(parentScope) {
-        var component = new Component(this.descriptor, parentScope);
-        var proxy = proxyContext(component);
+    $addScope(componentName, parentScope) {
+        this.$parentScope = parentScope;
+        this.$componentName = componentName;
+    }
+
+    $create(parentNode) {
+        var component = new Component(this.descriptor, this.$parentScope, parentNode, this.$componentName);
 
         if (component.$hooks.$created) 
-            component.$hooks.$created.call(proxy);
+            component.$hooks.$created.call(component.$proxy);
 
-        return proxy;
+        return component.$proxy;
     }
-}
 
-function recurseThroughComponentTree(root, callBack) {
-    callBack(root);
-    if (root.$children && root.$children.$activeComponents)
-        root.$children.$activeComponents.forEach(c => recurseThroughComponentTree(c, callBack));
+    $clone() {
+        return new ComponentFactory(this.descriptor);
+    }
 }
 
 function MountComponent(nodeOrId, componentFactory) {
@@ -85,12 +95,11 @@ function MountComponent(nodeOrId, componentFactory) {
     
     if (typeChecker.isElementNode(nodeOrId)) {
         var node = nodeOrId;
-        var instance = componentFactory.$create();
+
+        var instance = componentFactory.$create(node);
         node.appendChild(instance.$templateHtml.content);
         // calls the mounted hook
-        recurseThroughComponentTree(instance, comp => {
-            if (comp.$hooks.$mounted) comp.$hooks.$mounted.call(instance);
-        });
+        callMountedHooks(instance);
         return instance;
     } else {
         console.error('mount point expects valid html id or node type');
