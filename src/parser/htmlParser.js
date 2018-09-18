@@ -73,6 +73,7 @@ function addInlineTextParser(self, node, text) {
     var guid = utils.uuidv4();
     var newNode = utils.getDocument('<span m-text-render-'+guid+'></span>').content.childNodes[0];
     node.parentNode.replaceChild(newNode, node);
+    self.$nodes.splice(self.$nodes.indexOf(node), 1, newNode);
     var nodeList = [newNode];
     var addDeps = function(propName, prop) {
         if (typeChecker.isProp(prop)) {
@@ -85,10 +86,14 @@ function addInlineTextParser(self, node, text) {
 
     var performEval = function() {
         var evalObj = getterFun();
+        // remove from self node list
+        nodeList.forEach(node => self.$nodes.splice(self.$nodes.indexOf(node), 1));
         var first = nodeList.shift();
         var parentNode = first.parentNode;
         var placeholder = PLACE_HOLDER_COMMENT();
+
         parentNode.replaceChild(placeholder, first);
+
         nodeList.forEach(node => parentNode.removeChild(node));
         nodeList = [];
         // reverse because there is no insert after function
@@ -98,9 +103,12 @@ function addInlineTextParser(self, node, text) {
             var first = elements.shift();
             parentNode.replaceChild(first, placeholder);
             nodeList = [first];
+            self.$nodes.push(first);
+            
             elements.forEach(element => {
                 parentNode.insertBefore(element, nodeList[nodeList.length - 1]);
                 nodeList.push(element);
+                self.$nodes.push(first);
             });
         } else {
             nodeList = [placeholder];

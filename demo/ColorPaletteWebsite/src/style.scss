@@ -198,7 +198,6 @@ body {
             margin: 20px;
             text-align: left;
             font-size: 16px;
-            opacity: 0;
         }
 
         #image-slider-logo-img {
@@ -210,7 +209,7 @@ body {
         }
 
         #image-slider-letter-cover {
-            width: 39.5%;
+            width: 39.8%;
             height: 100%;
             position: absolute;
             right: 0;
@@ -252,18 +251,6 @@ body {
             }
         }
 
-        @keyframes showText {
-            0% {
-                opacity: 0;
-            }
-            50% {
-                opacity: 0;
-            }
-            100%  {
-                opacity: 1;
-            }
-        }
-
         &.animation-active {
             #image-slider-logo-img {
                 animation-fill-mode: forwards;
@@ -280,12 +267,6 @@ body {
             .redo-animation {
                 animation-fill-mode: forwards;
                 animation-name: showRedoAnimation;
-                animation-duration: 2s;
-            }
-
-            #image-slider-text {
-                animation-fill-mode: forwards;
-                animation-name: showText;
                 animation-duration: 2s;
             }
         }

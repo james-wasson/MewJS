@@ -1,17 +1,7 @@
 import { Component, ComputedProp } from 'Mew';
-import slowShowWords from '../../display/slowShowWords';
+import slowShowWords from '../../display/slowShowText';
 
 export default new Component({
-    hooks: {
-        mounted: function() {
-            window.setTimeout(function() {
-                console.log('here');
-                this.wordString = "asdasdjhasdhhjsgfhjcbjfhuehhebchhjjsahdjkahwehjfvj"
-            }.bind(this), 4000);
-        }
-    },
-    parent: {
-    },
     self: {
         props: {
             'imageSliderActive': {
@@ -25,7 +15,7 @@ export default new Component({
             },
         },
         template: `
-            <div id="image-slider" class="home-component" m-bind:class="{ 'animation-active': this.imageSliderActive }" m-on="{ mouseover: () => this.imageSliderActive = true }">
+            <div id="image-slider" class="home-component" m-bind:class="{ 'animation-active': this.imageSliderActive }" m-on="{ mouseenter: () => this.imageSliderActive = true }">
                 <div style="position:relative">
                     <div class="redo-animation" m-on="{ click: () => this.imageSliderActive = false }"><i class="fas fa-redo"></i></div>
                     <img id="image-slider-logo-img" src="/assets/LogoName.svg" alt="Logo of MewJS">
@@ -46,8 +36,12 @@ export default new Component({
                 definition: slowShowWords,
                 props: {
                     'isShown': 'imageSliderActive',
-                    duration: {
-                        value: 2000,
+                    durationPerWord: {
+                        value: 80,
+                        type: 'int'
+                    },
+                    showOverlap: {
+                        value: 20,
                         type: 'int'
                     }
                 }
