@@ -1,7 +1,8 @@
 $primary-logo-blue: #5757e5;
 $primary-blue: darken(adjust-hue($primary-logo-blue, -30%), 10%);
 $primary-yellow: #f9f92a;
-$orange: adjust-hue($primary-yellow, -30%);
+$dark-yellow:   adjust-hue(darken(#f9f92a, 8%), -2%);
+$primary-orange: adjust-hue($primary-yellow, -30%);
 $light-blue: lighten($primary-blue, 30%);
 $light-grey: #F6F6F6;
 $medium-grey: #DCDCDC;

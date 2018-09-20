@@ -1,24 +1,28 @@
 #tile-info {
-    width: 80%;
+    width: 90%;
     margin: 0 auto;
     .tile {
         
         article {
+            margin: 0 auto;
+            padding-left: 3%;
+            padding-right: 3%;
             text-align: center;
             color: white;
 
             &.orange {
-                background-color: $orange;
+                background-color: $primary-orange;
             }
             &.blue {
                 background-color: $primary-blue;
             }
             &.yellow {
-                background-color: $primary-yellow;
+                background-color: $dark-yellow;
             }
 
-            .title, .subtitle {
+            .subtitle {
                 word-break: initial;
+                margin-bottom: 10px;
             }
 
             @media screen and (max-width: $tablet) {
@@ -30,7 +34,11 @@
 
         .icon {
             height: 80px;
-            font-size: 4.5em;
+            width: 80px;
+
+            .icon-text {
+                transform: translateY(20%);
+            }
         }
         
     }

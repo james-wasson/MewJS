@@ -11,7 +11,9 @@ export default new Component({
             },
             'wordString': {
                 value: `MewJs is a reactive javascript framework designed to be low impact but still provide all 
-                        the functionality of a full full-fledged component framework.`,
+                        the functionality of a full full-fledged component framework.
+                        We designed this framework to tackle the problems of the modern web using easy to understand components that interface with the DOM
+                        directly so you don't have to.`,
                 type: 'string'
             },
         },
