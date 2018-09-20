@@ -42,7 +42,7 @@
         100%  {width: 0}
     }
 
-    @media screen and (max-width: $tablet) { // they designed with min width, so off by one
+    @media screen and (max-width: $tablet) {
         #image-slider-logo-img {
             width: 200px;
         }

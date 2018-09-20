@@ -1,7 +1,10 @@
 .reactive-table-box {
-    max-height: 100%;
+    max-height: 80%;
     #reactive-table {
         padding-right: 40px; /* Make space for the redo button */
+        @media screen and (max-width: $tablet) {
+            padding-right: 25px; /* Make space for the redo button */
+        }
         table {
             border: 1px solid #dbdbdb;
             border-radius: 30%;
