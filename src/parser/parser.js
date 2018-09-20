@@ -6,13 +6,11 @@ import hooksParser from './hooksParser';
 import proxyContext from '../proxyContext';
 import { typeChecker } from '../typeManager';
 import { callMountedHooks } from '../callHooks';
+import { initalizeComputedComponent } from '../computedProp';
 
 class Component {
     constructor(compDescriptor, parentScope, parentNode, componentName) {
-        if (!typeChecker.isObject(compDescriptor)) {
-            console.warn('The component descriptor must be of type "object"');
-            compDescriptor = {};
-        }
+        this.$isDestroyed = false;
         this.$componentName = componentName;
         this.$proxy = proxyContext(this);
         this.$className = "Component";
@@ -35,6 +33,7 @@ class Component {
         }
         this.$nodes = [];
         this.$_onMounted = [];
+        this.$destroyable = [];
 
         if (!typeChecker.isObject(compDescriptor.self)) {
             throw new Error('Components must have self defined of type "object".');
@@ -43,19 +42,27 @@ class Component {
         if (compDescriptor.hasOwnProperty('parent'))
             parentParser.call(this, this, compDescriptor.parent, parentScope);
 
-        selfParser.call(this, compDescriptor.self);
+        selfParser.call(this, this, compDescriptor.self);
 
         if (compDescriptor.hasOwnProperty('children'))
             childParser.call(this, this, compDescriptor.children);
 
-        for (var propName in this) 
-            if (this.hasOwnProperty(propName) && typeChecker.isComputedProp(this[propName]))
-                this[propName].$initalize(this);
-
+        
         if (compDescriptor.hasOwnProperty('hooks'))
             hooksParser.call(this, compDescriptor.hooks);
         
-        htmlParser.bind(this)();
+        
+        htmlParser.call(this);
+
+
+        initalizeComputedComponent(this);
+
+    }
+
+    $destroy() {
+        this.$isDestroyed = true;
+        this.$destroyable.forEach(p => p.$destroy());
+        this.$children.$activeComponents.forEach(comp => comp.$component.$destroy());
     }
 }
 
@@ -72,10 +79,9 @@ class ComponentFactory {
 
     $create(parentNode) {
         var component = new Component(this.descriptor, this.$parentScope, parentNode, this.$componentName);
-
-        if (component.$hooks.$created) 
+                
+        if (component.$hooks.$created)
             component.$hooks.$created.call(component.$proxy);
-
         return component.$proxy;
     }
 
@@ -101,6 +107,7 @@ function MountComponent(nodeOrId, componentFactory) {
         // calls the mounted hook
         callMountedHooks(instance);
         return instance;
+
     } else {
         console.error('mount point expects valid html id or node type');
         return null;
@@ -110,4 +117,4 @@ function MountComponent(nodeOrId, componentFactory) {
 export { 
     ComponentFactory as Component,
     MountComponent
-};
+}

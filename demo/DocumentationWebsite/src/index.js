@@ -2,8 +2,7 @@ import { Component, MountComponent, ComputedProp } from 'Mew';
 import navbar from './navbar';
 import footer from './footer';
 import home from './pages/home/home.main';
-
-var initColor = 'DustBeach';
+import examples from './pages/examples/examples.main';
 
 var BaseComponent = new Component({
     hooks: {
@@ -62,7 +61,7 @@ var BaseComponent = new Component({
                 definition: navbar,
             },
             'examples': {
-                definition: navbar,
+                definition: examples,
             }
         }
     }

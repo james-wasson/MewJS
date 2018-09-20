@@ -1,0 +1,43 @@
+.reactive-table-box {
+    max-height: 100%;
+    #reactive-table {
+        padding-right: 40px; /* Make space for the redo button */
+        table {
+            border: 1px solid #dbdbdb;
+            border-radius: 30%;
+        }
+        th, td {
+            text-align: center;
+        }
+        .remove-button {
+            display: block;
+            width: 30%;
+            min-width: 18px;
+            margin-left: auto;
+            margin-right: auto;
+            cursor: pointer;
+            color: red;
+        }
+    
+        .state-container{
+            text-align: center;
+            background-color: $primary-blue;
+    
+            .state-button {
+                border-color: white;
+                background-color: white;
+                font-weight: bold;
+                color: $primary-blue;
+                margin: 3px 5px;
+                height: 100%;
+                white-space: normal;
+    
+                &.selected {
+                    color: white;
+                    background-color: $orange;
+                    border-color: $orange;
+                }
+            }
+        }
+    }
+}

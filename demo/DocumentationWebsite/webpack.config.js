@@ -7,7 +7,7 @@ module.exports = {
     mode: isProd ? "production" : "development", // no defaults
     entry: {
         app: path.resolve(__dirname, './src/index.js'),
-        style: path.resolve(__dirname, './src/style.scss')
+        style: path.resolve(__dirname, './src/style/main.scss')
     },
     devServer: {
         contentBase: path.resolve(__dirname, './dist'),

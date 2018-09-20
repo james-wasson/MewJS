@@ -23,4 +23,8 @@ var getDocument = function(html, tagType) {
 }
 
 export { objectFilter, uuidv4, getDocument };
-export default { objectFilter: objectFilter, uuidv4: uuidv4, getDocument: getDocument };
+export default { 
+    objectFilter: objectFilter,
+    uuidv4: uuidv4,
+    getDocument: getDocument
+};

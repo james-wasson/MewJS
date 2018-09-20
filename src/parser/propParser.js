@@ -1,4 +1,4 @@
-import utils from './utils';
+import utils from '../utils';
 import { typeChecker, typeSafePropGetter } from '../typeManager';
 import isVarName from 'is-var-name';
 import Prop from '../prop';
@@ -16,6 +16,7 @@ function definePropOnSelf(self, prop, value) {
         console.error("Value must be of type prop.");
         return;
     }
+
     self[prop] = value;
 }
 
@@ -51,11 +52,14 @@ function CreateProps(propDescriptors) {
             }
             if (hasError) continue;
             if (typeChecker.isProp(propDescript)) {
-                props[name] = propDescript;
+                if (typeChecker.isComputedProp(propDescript))
+                    props[name] = propDescript.$clone();
+                else
+                    props[name] = propDescript;
                 continue;
             }
 
-            var value = propDescript['value'] || null;
+            var value = typeChecker.isUndef(propDescript['value']) ? null : propDescript['value'];
             var type = typeSafePropGetter('string', propDescript, 'type', 'any');
             var shouldFreeze = typeSafePropGetter('bool', propDescript, 'freeze', false);
 
@@ -74,9 +78,14 @@ const PROCESS_PROP_OPTIONS = Object.freeze({
 });
 
 function propParser(processOption, self, propsObj, scope = {}, propCallback = null) {
+    if (typeChecker.isArray(propsObj))
+        propsObj = propsObj.slice();
+    else if (typeChecker.isObject(propsObj))
+        propsObj = Object.assign({}, propsObj);
+
     switch(processOption) {
         case PROCESS_PROP_OPTIONS.ARRAY:
-            if (Array.isArray(propsObj)) {
+            if (typeChecker.isArray(propsObj)) {
                 for (var prop of propsObj) {
                     if (!typeChecker.isString(prop)) {
                         console.error("Props defined in Array for must be a string.");

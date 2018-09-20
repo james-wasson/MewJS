@@ -1,7 +1,8 @@
-import utils from './utils';
+import utils from '../utils';
 import { typeChecker } from '../typeManager';
 import propParser from './propParser';
 import { PROCESS_PROP_OPTIONS } from './propParser';
+import { Component } from './parser';
 
 function processListener(listeners, callBack) {
     if (!typeChecker.isObject(listeners)) {
@@ -16,6 +17,100 @@ function processListener(listeners, callBack) {
                 }
             }
         }
+    }
+}
+
+class ComponentProcessor {
+    constructor(self, descriptor, componentName) {
+        this.$self = self;
+        this.$className = "ComponentProcessor";
+        this.$componentName = componentName;
+        this.deps = [];
+        if (typeChecker.isComputedProp(descriptor)) {
+            this.$descriptor = descriptor.$clone();
+            this.$descriptor.$initalize(self);
+        } else {
+            this.$descriptor = descriptor
+        }
+    }
+    $process() {
+        var componentList;
+        if (typeChecker.isComputedProp(this.$descriptor)) 
+            var componentList = this.$descriptor.$getValue();
+        else
+            var componentList = this.$descriptor;
+
+        if (!Array.isArray(componentList))
+            componentList = [componentList];
+
+        var rvList = [];
+        for (var comp of componentList) {
+            var rv = {};
+            if (!typeChecker.isObject(comp) || typeChecker.isFunction(comp)) {
+                console.error('Individual components must either be object or Array of objects');
+                continue;
+            }
+            
+            if (comp.hasOwnProperty('definition') && typeChecker.isComponentFactory(comp.definition)) {
+                rv.$definition = comp.definition.$clone();
+            } else {
+                console.error('Component must have definition and it be constructed by component factory, be a function, or a string');
+                continue;
+            }
+
+            if (comp.hasOwnProperty('props')) {
+                if (typeChecker.isArray(comp.props)) {
+                    propParser(PROCESS_PROP_OPTIONS.ARRAY, rv, comp.props, Object.assign({}, this.$self.$children, this.$self))
+                } else if (typeChecker.isObject(comp.props)) {
+                    propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, rv, comp.props, Object.assign({}, this.$self.$children, this.$self));
+                } else {
+                    console.error('Props on component expected to be of type "object" or an array');
+                }
+            }
+
+            rv.$listeners = {};
+            if (comp.hasOwnProperty('listeners')) {
+                processListener(comp.listeners, (eventName, eventHandler) => rv.$listeners[eventName] = eventHandler);
+            }
+
+            rv.$prepend = false;
+            if (comp.hasOwnProperty('prepend')) {
+                rv.$prepend = typeChecker.isBool(comp.prepend) ? comp.prepend : false;
+            }
+
+            var eventNames = Object.keys(this.$self.$listeners).concat(Object.keys(rv.$listeners))
+                                .filter((value, index, arry) => arry.indexOf(value) === index); // get unique
+            var providedListeners = {};
+            for (var eventName of eventNames) {
+                providedListeners[eventName] = [];
+                if (rv.$listeners[eventName]) providedListeners[eventName].push(rv.$listeners[eventName]);
+                if (this.$self.$listeners[eventName]) providedListeners[eventName].push(this.$self.$listeners[eventName]);
+            }
+
+            var props = utils.objectFilter(Object.assign({}, rv, this.$self.$children), (key, value) => typeChecker.isProp(value));
+            for (var pName in props) // i'm not sure where else to do this initalization
+                if (typeChecker.isComputedProp(props[pName])) 
+                    props[pName].$initalize(this.$self);
+            rv.$definition.$addScope(this.$componentName, {
+                $props: props,
+                $parent: this.$self,
+                $listeners: providedListeners                        
+            });
+
+            rvList.push(rv);
+        }
+        return rvList;
+    }
+
+    $addDep(dep) {
+        if (typeChecker.isComputedProp(this.$descriptor)) {
+            var self = this;
+            this.$descriptor.$addDep({ $destroyable: dep.$destroyable, $run: function() { dep.$run(self.$process()) } });
+        }
+    }
+
+    $destroy() {
+        this.$isDestroyed = true;
     }
 }
 
@@ -46,62 +141,13 @@ function processChildren(self, childrenDef) {
             var components = childrenDef.components;
             for (var componentName in components) {
                 if (components.hasOwnProperty(componentName)) {
-                    var compList = components[componentName];
-                    if (!Array.isArray(compList))
-                         compList = [compList];
-                    for (var comp of compList) {
-                        var rv = {};
-                        if (!typeChecker.isObject(comp)) {
-                            console.error('Individual components must either be object or Array of objects');
-                            continue;
-                        }
-                        
-                        if (comp.hasOwnProperty('definition') && typeChecker.isComponentFactory(comp.definition)) {
-                            rv.$definition = comp.definition.$clone();
-                        } else {
-                            console.error('Component must have definition and it be constructed by component factory');
-                            continue;
-                        }
-
-                        if (comp.hasOwnProperty('props')) {
-                            if (Array.isArray(comp.props)) {
-                                propParser(PROCESS_PROP_OPTIONS.ARRAY, rv, comp.props, Object.assign({}, self.$children, self))
-                            } else if (typeChecker.isObject(comp.props)) {
-                                propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, rv, comp.props, Object.assign({}, self.$children, self));
-                            } else {
-                                console.error('Props on component expected to be of type "object" or an array');
-                            }
-                        }
-
-                        rv.$listeners = {};
-                        if (comp.hasOwnProperty('listeners')) {
-                            processListener(comp.listeners, (eventName, eventHandler) => rv.$listeners[eventName] = eventHandler);
-                        }
-
-                        rv.$prepend = false;
-                        if (comp.hasOwnProperty('prepend')) {
-                            rv.$prepend = typeChecker.isBool(comp.prepend) ? comp.prepend : false;
-                        }
-
-                        var eventNames = Object.keys(self.$listeners).concat(Object.keys(rv.$listeners))
-                                            .filter((value, index, self) => self.indexOf(value) === index); // get unique
-                        var providedListeners = {};
-                        for (var eventName of eventNames) {
-                            providedListeners[eventName] = [];
-                            if (rv.$listeners[eventName]) providedListeners[eventName].push(rv.$listeners[eventName]);
-                            if (self.$listeners[eventName]) providedListeners[eventName].push(self.$listeners[eventName]);
-                        }
-
-                        rv.$definition.$addScope(componentName, { // leave null so we can pass the element
-                            $props: utils.objectFilter(Object.assign({}, rv, self.$children, self), (key, value) => typeChecker.isProp(value)),
-                            $parent: self,
-                            $listeners: providedListeners                        
-                        });
-
-                        if (!self.$children.$components[componentName])
-                            self.$children.$components[componentName] = []
-                        self.$children.$components[componentName].push(rv);
+                    var componentDef = components[componentName];
+                    if (!typeChecker.isComputedProp(componentDef) && !typeChecker.isArray(componentDef) && !typeChecker.isObject(componentDef)) {
+                        console.error('Components must either be of type array, object, or a computed property.');
+                        continue;
                     }
+                    if (!self.$children.$components[componentName]) self.$children.$components[componentName] = [];
+                    self.$children.$components[componentName].push(new ComponentProcessor(self, componentDef, componentName));
                 }
             }
         }

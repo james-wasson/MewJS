@@ -1,9 +1,9 @@
-import utils from './utils';
+import utils from '../utils';
 import { typeChecker } from '../typeManager';
 import propParser from './propParser';
 import { PROCESS_PROP_OPTIONS } from './propParser';
 
-function processSelf(selfDef) {
+function processSelf(self, selfDef) {
     if (selfDef.hasOwnProperty('props')) {
         propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, this, selfDef.props, this)
     }
@@ -32,7 +32,9 @@ function processSelf(selfDef) {
                     } else {
                         var watchFun = watchers[propName];
                         watchFun = watchFun.bind(this.$proxy);
-                        this[propName].$addDep(watchFun);
+                        var $destroyable = { $isDestroyed: false, $destroy: function() { this.$isDestroyed = true; } };
+                        this[propName].$addDep({ $destroyable: $destroyable, $run: watchFun });
+                        this.$destroyable.push($destroyable);
                         this.$watchers[propName] = {
                             $onchange: watchFun,
                             $prop: this[propName]

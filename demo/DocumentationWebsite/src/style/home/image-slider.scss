@@ -1,0 +1,104 @@
+#image-slider {
+    width: 100%;
+    text-align: center;
+    
+    #image-slider-container {
+        overflow: hidden;
+    }
+
+    #image-slider-text {
+        text-align: center;
+        background-color: $primary-blue;
+        .title {
+            color: white;
+        }
+    }
+
+    #image-slider-logo-img {
+        position: relative;
+        width: 40%;
+        transform: translateX(25%)
+    }
+
+    #image-slider-letter-cover {
+        width: 40.8%;
+        height: 100%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 20;
+        background-color: white;
+    }
+
+    @keyframes moveLogo {
+        0%   {transform: translateX(25%)}
+        50%  {transform: translateX(-25%)}
+        100% {transform: translateX(0%)}
+    }
+
+    @keyframes moveLetterCover {
+        0%   { width: 40%}
+        50% {width: 28%}
+        100%  {width: 0}
+    }
+
+    @media screen and (max-width: $tablet) { // they designed with min width, so off by one
+        #image-slider-logo-img {
+            width: 200px;
+        }
+
+        #image-slider-letter-cover {
+            width: calc(50% - 46px);
+        }
+
+        @keyframes moveLogo {
+            0%   {transform: translateX(25%)}
+            50%  {transform: translateX(-12%)}
+            100% {transform: translateX(0%)}
+        }
+
+        @keyframes moveLetterCover {
+            0%   { width: calc(50% - 46px)}
+            50% {width: 15%}
+            100%  {width: 0}
+        }
+
+        #image-slider-text {
+            .title, .subtitle {
+                font-size: 16px !important;
+            }
+        }
+
+        @media screen and (max-width: 270px) {
+            #image-slider-letter-cover {
+                width: 26.5%;
+            }
+            @keyframes moveLogo {
+                0%   {transform: translateX(25%)}
+                50%  {transform: translateX(-5%)}
+                100% {transform: translateX(0%)}
+            }
+    
+            @keyframes moveLetterCover {
+                0%   { width: 26.5%}
+                50% {width: 5%}
+                100%  {width: 0}
+            }
+        }
+    }
+
+    &.animation-active {
+        #image-slider-logo-img {
+            animation-fill-mode: forwards;
+            animation-name: moveLogo;
+            animation-duration: 2s;
+            animation-timing-function: ease-in-out;
+        }
+        #image-slider-letter-cover {
+            animation-fill-mode: forwards;
+            animation-name: moveLetterCover;
+            animation-duration: 2s;
+        }
+    }
+
+}

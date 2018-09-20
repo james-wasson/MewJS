@@ -1,0 +1,71 @@
+#navbar .navbar {
+    z-index: 1000;
+    height: $navbar-height;
+    margin: 0;
+    border-bottom: $navbar-border-width solid $medium-grey;
+    box-shadow: 0 $navbar-border-width 5px $medium-grey;
+
+    .navbar-brand {
+        line-height: 0;
+        height: $navbar-height-no-border;
+
+        #navbar-logo {
+            margin: 0;
+            height: 100%;
+            display: inline-block;
+            margin-right: 30px;
+    
+            #navbar-logo-img {
+                height: $navbar-height-no-border - 5px; // minus margin
+                cursor: pointer; 
+                margin: 5px;
+                margin-bottom: 0;
+                padding: 0;
+    
+            }
+        }
+    }
+
+    $button-height: 40px;
+
+    .navbar-menu {
+        height: $navbar-height-no-border; // minus margin
+        float: right;
+        margin: 0;
+        margin-right: 30px;
+
+        .navbar-end, .navbar-start {
+            position: relative;
+            vertical-align: middle;
+            .button {
+                height: $button-height;
+                position: relative;
+                top: calc(50% - #{$button-height} / 2);
+                margin: 5px;
+                display: inline-flex;
+                font-size: 22px;
+                background-color: $primary-blue;
+            }
+        }
+    }
+
+    @media screen and (max-width: $desktop - 1px) { // they designed with min width, so off by one
+        .navbar-menu {
+            height: auto;
+            position: absolute;
+            right: 0;
+            top: $navbar-height;
+            margin-right: 0;
+            width: 40%;
+            min-width: 200px;
+    
+            .navbar-end, .navbar-start {
+                text-align: center;
+                .button {
+                    position: static;
+                    top: initial;
+                }
+            }
+        }
+    }
+}

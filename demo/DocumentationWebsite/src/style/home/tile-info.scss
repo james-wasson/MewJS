@@ -1,0 +1,37 @@
+#tile-info {
+    width: 80%;
+    margin: 0 auto;
+    .tile {
+        
+        article {
+            text-align: center;
+            color: white;
+
+            &.orange {
+                background-color: $orange;
+            }
+            &.blue {
+                background-color: $primary-blue;
+            }
+            &.yellow {
+                background-color: $primary-yellow;
+            }
+
+            .title, .subtitle {
+                word-break: initial;
+            }
+
+            @media screen and (max-width: $tablet) {
+                .title, .subtitle {
+                    font-size: 16px !important;
+                }
+            }
+        }
+
+        .icon {
+            height: 80px;
+            font-size: 4.5em;
+        }
+        
+    }
+}

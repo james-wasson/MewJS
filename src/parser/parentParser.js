@@ -1,4 +1,4 @@
-import utils from './utils';
+import utils from '../utils';
 import { typeChecker } from '../typeManager';
 import propParser from './propParser';
 import { PROCESS_PROP_OPTIONS } from './propParser';

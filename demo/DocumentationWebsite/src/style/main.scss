@@ -1,0 +1,54 @@
+@import './config.scss'; /* Adds bulma */
+
+html {
+    overflow-y: auto
+}
+
+body {
+    margin: 0;
+    overflow-y: auto
+}
+
+.icon.custom-icon {
+    position: relative;
+    .icon-text {
+        position: absolute;
+        top:50%;
+        left:50%;
+        transform:translateX(-50%) translateY(-50%);
+        padding-bottom: 1px;
+    }
+}
+
+#content {
+    width: 100%;
+    height: 100vh;
+    background-color: $light-grey;
+}
+
+#body {
+    $height-calc: calc(100vh - #{$navbar-height} - #{$footer-height});
+    width: 100%;
+    height: $height-calc;
+    max-height: $height-calc;
+    min-height: $height-calc;
+    position: absolute;
+    top: $navbar-height;
+    left: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+@import './buttons.scss';
+@import './footer.scss';
+@import './inner-content.scss';
+@import './navbar.scss';
+/* Import home scss */
+#page-home {
+    @import './home/image-slider.scss';
+    @import './home/tile-info.scss';
+}
+/* Import examples scss */
+#page-examples {
+    @import './examples/reactive-table.scss';
+}

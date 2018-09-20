@@ -1,4 +1,4 @@
-import utils from './utils';
+import utils from '../utils';
 import { typeChecker } from '../typeManager';
 import { removeStyle, addStyle, setProperty, addClass, removeClass } from '../htmlPropertyManager';
 import { GetEvalFunctionInSelf } from '../getRecorder';
@@ -35,8 +35,11 @@ function attributeStringParser(evalObj, performAction, node, attribute) {
 function addAttributeParser(self, node, attribute, evalType, performAction) {
     var addDeps = function(propName, prop) {
         if (typeChecker.isProp(prop)) {
-            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.node === node && dep.attribute === attribute))
-                prop.$addDep({ node: node, attribute: attribute, $run: performEval});
+            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.node === node && dep.attribute === attribute)) {
+                var $destroyable = { $destroy() { this.$isDestroyed = true }, $isDestroyed: false };
+                prop.$addDep({ $destroyable: $destroyable, node: node, attribute: attribute, $run: performEval});
+                self.$destroyable.push($destroyable);
+            }
         }
     }
 
@@ -75,10 +78,14 @@ function addInlineTextParser(self, node, text) {
     node.parentNode.replaceChild(newNode, node);
     self.$nodes.splice(self.$nodes.indexOf(node), 1, newNode);
     var nodeList = [newNode];
+
     var addDeps = function(propName, prop) {
         if (typeChecker.isProp(prop)) {
-            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.guid === guid && dep.attribute === 'text'))
-                prop.$addDep({ guid: guid, attribute: 'text', $run: performEval});
+            if (!prop.$hasDep((dep) => typeChecker.isObject(dep) && dep.guid === guid && dep.attribute === 'text')) {
+                var destroyable = { $isDestroyed: false, $destroy: function() { this.$isDestroyed = true } }
+                prop.$addDep({ $destroyable: destroyable, guid: guid, attribute: 'text', $run: performEval});
+                self.$destroyable.push(destroyable)
+            }
         }
     }
 
@@ -86,6 +93,7 @@ function addInlineTextParser(self, node, text) {
 
     var performEval = function() {
         var evalObj = getterFun();
+
         // remove from self node list
         nodeList.forEach(node => self.$nodes.splice(self.$nodes.indexOf(node), 1));
         var first = nodeList.shift();
@@ -99,7 +107,7 @@ function addInlineTextParser(self, node, text) {
         // reverse because there is no insert after function
         var elements = [...utils.getDocument(evalObj).content.childNodes].reverse();
 
-        if (elements.length > 1) {
+        if (elements.length > 0) {
             var first = elements.shift();
             parentNode.replaceChild(first, placeholder);
             nodeList = [first];
@@ -118,21 +126,64 @@ function addInlineTextParser(self, node, text) {
     return performEval;
 }
 
+function onComponentChange(self, parentNode, componentId, componentNameId, compDescriptions) {
+    // remove previous components
+    self.$children.$activeComponents = self.$children.$activeComponents.filter(comp => {
+        if (comp.$componentId == componentId) {
+            parentNode.removeChild(comp.$childNode);
+            comp.$component.$destroy();
+            return false;
+        }
+        return true;
+    });
+    compDescriptions.forEach(description => {
+        var component = description.$definition.$create(parentNode);
+        self.$children.$activeComponents = self.$children.$activeComponents.concat(transferComponents(component, componentId, componentNameId, description, parentNode));
+    });
+}
+
+function transferComponents(component, componentId, componentNameId, description, parentNode) {
+    var childNodes = [...component.$templateHtml.content.children]; // conversion from htmlNodeList to array
+    if (description.$prepend === true)
+        childNodes.reverse();
+    var accumulator = childNodes.map(child => {
+        if (description.$prepend === true) {
+            parentNode.prepend(child);
+        } else {
+            parentNode.appendChild(child);
+        }
+
+        return {
+            $component: component,
+            $parentNode: parentNode,
+            $childNode: child,
+            $componentId: componentId,
+            $componentNameId: componentNameId
+        };
+    });
+    callMountedHooks(component);
+    return accumulator;
+};
+
 function processHtmlRecursively(self, parentNode) {
+    var textNodeSum = ''; // for multiline html generation
     for (var node of parentNode.childNodes) {
         self.$nodes.push(node);
         if (typeChecker.isTextNode(node)) {
-            var litRegex = /{{([^}}]+)}}/g;// includes ${} template literal syntax
-            var text = node.nodeValue;
-            var found = text.match(litRegex);
-            if (found && found.length > 0) {
-                // replaces the matches with template literal syntax
-                for (var f of found) {
-                    text = text.replace(f, '$' + f.trim().substr(1, f.length - 2));
+            if (node.nodeValue.trim().length > 0) {
+                var litRegex = /{{([^}}]+)}}/g;// includes ${} template literal syntax
+                var text = textNodeSum + node.nodeValue;
+                var found = text.match(litRegex);
+                if (found && found.length > 0) {
+                    // replaces the matches with template literal syntax
+                    for (var f of found) {
+                        text = text.replace(f, '$' + f.trim().substr(1, f.length - 2));
+                    }
+                    self.$_onMounted.push(addInlineTextParser(self, node, text));
                 }
-                self.$_onMounted.push(addInlineTextParser(self, node, text));
             }
         } else if (typeChecker.isElementNode(node)) {
+            textNodeSum = ''; // reset the text node summation for multiline html generation
             if (node.getAttribute("m-bind:class")) {
                 addAttributeParser(self, node, "m-bind:class", "object", function(node, className, value) {
                     if (value) addClass(node, className);
@@ -177,48 +228,55 @@ function processHtmlRecursively(self, parentNode) {
             }
 
             if (node.getAttribute("m-comp")) {
-                addAttributeParser(self, node, "m-comp", "any", function(node, componentNames) {
-                    // remove previous active components for this node
-                    self.$children.$activeComponents = self.$children.$activeComponents.filter(active => {
-                        if (active.$parentNode === node) {
-                            node.removeChild(active.$childNode); // remove the component node
-                            return false; // filter the $activeComponent out
-                        }
-                        return true;
-                    });
-                    if (!typeChecker.isArray(componentNames)) componentNames = [componentNames];
-                    for (var componentName of componentNames) {
-                        if (typeChecker.isString(componentName) && self.$children.$components.hasOwnProperty(componentName)) {
-                            var components = self.$children.$components[componentName];
+                (function(componentNameId) {
+                    var destroyableAllComponents = [];
+                    addAttributeParser(self, node, "m-comp", "any", function(parentNode, componentNames) {
+                        // destroy previous dependancies
+                        self.$destroyable = self.$destroyable.filter(p => 
+                            destroyableAllComponents.indexOf(p) == -1 && !p.$isDestroyed);
+                        destroyableAllComponents.forEach(p => p.$destroy());
+                        destroyableAllComponents = []
 
-                            if (!typeChecker.isArray(components)) components = [components];
-                            // add new active componenets for this node
-                            self.$children.$activeComponents = self.$children.$activeComponents.concat(
-                                components.reduce((accumulator, compDescription) => {
-                                    var comp = compDescription.$definition.$create(node);
-                                    var childNodes = [...comp.$templateHtml.content.children]; // conversion from htmlNodeList to array
-                                    accumulator = accumulator.concat(childNodes.map(child => {
-                                        if (compDescription.$prepend === true) {
-                                            node.prepend(child);
-                                        } else {
-                                            node.appendChild(child);
+                        if (!typeChecker.isArray(componentNames)) componentNames = [componentNames];
+                        // remove previous components
+                        self.$children.$activeComponents = self.$children.$activeComponents.filter(comp => {
+                            if (comp.$componentNameId == componentNameId) {
+                                parentNode.removeChild(comp.$childNode);
+                                comp.$component.$destroy();
+                                return false;
+                            }
+                            return true;
+                        });
+
+                        // add new components
+                        for (var componentName of componentNames) {
+                            if (typeChecker.isString(componentName) && self.$children.$components.hasOwnProperty(componentName)) {
+                                var componentProcessor = self.$children.$components[componentName];
+
+                                if (!typeChecker.isArray(componentProcessor)) componentProcessor = [componentProcessor];
+                                (function(componentId) {
+                                    // add new active componenets for this node
+                                    componentProcessor.forEach((processor) => {
+                                        var buildComponent = function(compDescriptions) {
+                                            onComponentChange(self, parentNode, componentId, componentNameId, compDescriptions);
                                         }
+                                        var destroyable = { $isDestroyed: false, $destroy: function() {
+                                            this.$isDestroyed = true; 
+                                        } }
+                                        processor.$addDep({ $destroyable: destroyable, $run: buildComponent });
+                                        destroyableAllComponents.push(destroyable);
+                                        self.$destroyable.push(destroyable);
+                                        
+                                        buildComponent(processor.$process());
+                                    });
+                                }(utils.uuidv4()))
 
-                                        return {
-                                            $component: comp,
-                                            $parentNode: node,
-                                            $childNode: child
-                                        };
-                                    }));
-                                    callMountedHooks(comp);
-                                    return accumulator;
-                                }, [])
-                            );
-                        } else {
-                            console.error('Component "'+componentName+'" not found for node: ', node);
+                            } else {
+                                console.error('Component "'+componentName+'" not found for node, name must be string: ', parentNode);
+                            }
                         }
-                    }
-                });
+                    });
+                }(utils.uuidv4()))
             }
         }
         processHtmlRecursively(self, node);

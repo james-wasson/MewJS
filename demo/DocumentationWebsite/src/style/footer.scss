@@ -1,0 +1,14 @@
+#footer {
+    width: 100%;
+    height: $footer-height;
+    max-height: $footer-height;
+    min-height: $footer-height;
+    position: absolute;
+    top: calc(100vh - #{$footer-height});
+    left: 0;
+    overflow: hidden;
+
+    * {
+        max-height: $footer-height !important;
+    }
+}

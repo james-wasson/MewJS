@@ -1,0 +1,3 @@
+Allow Inline generation of html, i.e. {{ arry.map(p => '<a></a>').join(' ') }}
+make html child node replace eachother at the top level in place before appending
+figure out a better way for people to search through node under them without polluting namespace

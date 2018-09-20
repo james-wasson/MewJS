@@ -1,0 +1,25 @@
+$primary-logo-blue: #5757e5;
+$primary-blue: darken(adjust-hue($primary-logo-blue, -30%), 10%);
+$primary-yellow: #f9f92a;
+$orange: adjust-hue($primary-yellow, -30%);
+$light-blue: lighten($primary-blue, 30%);
+$light-grey: #F6F6F6;
+$medium-grey: #DCDCDC;
+
+
+/* Set bulma variables */
+$tablet: 650px;
+$gap: -45px;
+
+@import 'bulma';
+
+/*
+ * Calculate the top bar, body, and footer placements
+ */
+
+$navbar-border-width: 2px;
+$navbar-height-no-border: 70px;
+$navbar-height: $navbar-height-no-border + $navbar-border-width;
+$footer-height: 60px;
+$scroll-bar-width: 17px;
+$body-margin-top-bottom: 15px;

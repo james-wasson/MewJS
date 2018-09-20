@@ -1,0 +1,26 @@
+#inner-content {
+    $margin-left-right: 30px;
+    $margin-left-right-small: 17px;
+    
+    margin-left: $margin-left-right;
+    margin-right: $margin-left-right;
+    margin-top: $body-margin-top-bottom;
+    margin-bottom: $body-margin-top-bottom;
+
+    &.collapse-for-scrollbar {
+        margin-right: calc(#{$margin-left-right} - 17px);
+        width: calc(100% - #{$margin-left-right} - #{$margin-left-right} + 17px);
+    }
+
+    @media screen and (max-width: $desktop - 1px) { // they designed with min width, so off by one
+        & {
+            margin-left: $margin-left-right-small;
+            margin-right: $margin-left-right-small;
+        }
+
+        &.collapse-for-scrollbar {
+            margin-right: calc(#{$margin-left-right-small} - 17px);
+            width: calc(100% - #{$margin-left-right-small} - #{$margin-left-right-small} + 17px);
+        }
+    }
+}
