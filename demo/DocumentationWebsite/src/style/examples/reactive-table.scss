@@ -1,5 +1,7 @@
 .reactive-table-box {
-    max-height: 80%;
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
     #reactive-table {
         padding-right: 40px; /* Make space for the redo button */
         @media screen and (max-width: $tablet) {
