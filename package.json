@@ -26,8 +26,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:dev": "webpack --config webpack.config.js",
     "start:dev": "webpack-dev-server --config webpack.config.js",
-    "build:CPW": "webpack --config \"./demo/DocumentationWebsite/webpack.config.js\"",
-    "start:CPW": "webpack-dev-server --config \"./demo/DocumentationWebsite/webpack.config.js\""
+    "build:doc": "webpack --config \"./demo/DocumentationWebsite/webpack.config.js\"",
+    "start:doc": "webpack-dev-server --config \"./demo/DocumentationWebsite/webpack.config.js\""
   },
   "repository": {
     "type": "git",
