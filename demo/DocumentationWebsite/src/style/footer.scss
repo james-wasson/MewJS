@@ -7,8 +7,51 @@
     top: calc(100vh - #{$footer-height});
     left: 0;
     overflow: hidden;
+    padding: 0;
+    background-color: #F9FaFa;
+    box-shadow: 0 -1px 5px #DCDCDC;
 
     * {
         max-height: $footer-height !important;
+    }
+    .level-right {
+        margin: 0;
+        z-index: 5;
+    }
+
+    .level-item {
+        img {
+            margin: 8px;
+            height: $footer-height - 16px;
+        }
+    }
+
+    .level-left {
+        z-index: 10;
+
+        .level-item {
+            margin: 3px 5px 3px 1px;
+            padding: 3px 5px 3px 1px;
+            &:not(:first-child) {
+                border-right: 1px solid $medium-grey;
+            }
+
+            a {
+                vertical-align: bottom;
+            }
+        }
+    }
+
+    @media screen and (max-width: $tablet) {
+        .level-left {
+            width: 100%;
+            .level-item {
+                display: inline-block;
+            }
+        }
+
+        .level-right {
+            display: none;
+        }
     }
 }

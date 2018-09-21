@@ -1,18 +1,19 @@
-<svg width="200" height="180" xmlns="http://www.w3.org/2000/svg">
+<svg width="195" height="175" xmlns="http://www.w3.org/2000/svg">
  <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
 
  <g>
   <title>background</title>
-  <rect fill="none" id="canvas_background" height="182" width="202" y="-1" x="-1"/>
-  <g display="none" id="canvasGrid">
-   <rect fill="url(#gridpattern)" stroke-width="0" y="1" x="1" height="400" width="580" id="svg_3"/>
+  <rect x="-1" y="-1" width="197" height="177" id="canvas_background" fill="none"/>
+  <g id="canvasGrid" display="none">
+   <rect id="svg_3" width="580" height="400" x="1" y="1" stroke-width="0" fill="url(#gridpattern)"/>
   </g>
  </g>
  <g>
   <title>Layer 1</title>
-  <path stroke="#000" id="svg_1" d="m73.85322,175.72141l61.00001,-175l61.00001,175l-122.00001,0l-0.00001,0z" stroke-width="0" fill="#5757e5"/>
-  <path id="svg_2" d="m4.10322,175.97141l61.00001,-175l61.00001,175l-122.00002,0z" stroke-width="0" stroke="#000" fill="#5757e5"/>
-  <path id="svg_4" d="m100.36494,175.97143l34.00001,-103.00002l34.00001,103.00002l-68.00002,0z" stroke-width="0" stroke="#000" fill="#f9f92a"/>
-  <path id="svg_6" d="m31.74955,175.97143l34.00001,-103.00002l34,103.00002l-68.00001,0z" stroke-width="0" stroke="#000" fill="#f9f92a"/>
+  <path fill="#0c7bff" stroke-width="0" d="m70.75,175.23453l61.00001,-175l61.00001,175l-122.00001,0l-0.00001,0z" id="svg_1" stroke="#000"/>
+  <path fill="#0c7bff" stroke="#000" stroke-width="0" d="m1,175.48453l61.00001,-175l61.00001,175l-122.00002,0z" id="svg_2"/>
+  <path fill="#fcff00" stroke="#000" stroke-width="0" d="m97.26172,175.48454l34.00001,-103.00002l34.00001,103.00002l-68.00002,0z" id="svg_4"/>
+  <path fill="#fcff00" stroke="#000" stroke-width="0" d="m28.64633,175.48456l34.00001,-103.00003l34,103.00003l-68.00001,0z" id="svg_6"/>
+  <text font-weight="bold" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="120" id="svg_13" y="-12.0625" x="126" stroke-opacity="null" stroke-width="0" stroke="#000" fill="#0c7bff">W</text>
  </g>
 </svg>

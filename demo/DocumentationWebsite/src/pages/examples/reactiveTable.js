@@ -126,6 +126,17 @@ export default new Component({
     },
     self: {
         props: {
+            takeAction: {
+                value: function() {
+                    this.actionWasTaken = true;
+                },
+                type: 'function',
+                frozen: true
+            },
+            actionWasTaken: {
+                value: false,
+                type: 'bool'
+            },
             states: {
                 value: ["British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Prince Edward Island", "Nova Scotia", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut"],
                 type: 'array',
@@ -140,18 +151,14 @@ export default new Component({
                     var newarray = this.pickedStates.slice();
                     newarray.push(state);
                     this.pickedStates = newarray;
-                    this.actionWasTaken = true;
+                    this.takeAction();
                 }
             },
             removeState: {
                 value: function(index) {
                     this.pickedStates = this.pickedStates.filter((p, i) => i !== index);
-                    this.actionWasTaken = true;
+                    this.takeAction();
                 }
-            },
-            actionWasTaken: {
-                value: false,
-                type: 'bool'
             }
         },
         template: `
@@ -175,14 +182,15 @@ export default new Component({
         listeners: {
             movedown: function(index) {
                 this.pickedStates = moveArrayItem(this.pickedStates, index, index + 1);
-                this.actionWasTaken = true;
+                this.takeAction();
             },
             moveup: function(index) {
                 this.pickedStates = moveArrayItem(this.pickedStates, index, index - 1);
-                this.actionWasTaken = true;
+                this.takeAction();
             },
             delete: function(index) {
                 this.removeState(index);
+                this.takeAction();
             }
         },
         components: {
@@ -192,7 +200,7 @@ export default new Component({
                 listeners: {
                     'redo': function() {
                         this.actionWasTaken = false;
-                        this.pickedStates = DEFAULT_STATES.slice()
+                        this.pickedStates = DEFAULT_STATES.slice();
                     }
                 }
             },

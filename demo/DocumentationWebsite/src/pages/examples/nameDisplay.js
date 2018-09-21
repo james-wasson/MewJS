@@ -24,7 +24,7 @@ export default new Component({
             <h4 class="subtitle is-4">{{this.nameText}}</h4>
             <div class="field is-horizontal">
                 <div class="field-label is-normal">
-                    <label class="label" for="nameInput">Name</label>
+                    <label class="label" for="nameInput">Type Your Name: </label>
                 </div>
                 <div class="field-body">
                     <div class="field">

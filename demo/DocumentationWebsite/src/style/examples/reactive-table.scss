@@ -1,12 +1,6 @@
 .reactive-table-box {
-    max-height: 60vh;
-    overflow-y: auto;
     overflow-x: hidden;
     #reactive-table {
-        padding-right: 40px; /* Make space for the redo button */
-        @media screen and (max-width: $tablet) {
-            padding-right: 25px; /* Make space for the redo button */
-        }
         table {
             border: 1px solid #dbdbdb;
             border-radius: 30%;
@@ -27,10 +21,14 @@
         .state-container{
             text-align: center;
             background-color: $primary-blue;
+
+            .subtitle {
+                color: $light-grey;
+            }
     
             .state-button {
-                border-color: white;
-                background-color: white;
+                border-color: $light-grey;
+                background-color: $light-grey;
                 font-weight: bold;
                 color: $primary-blue;
                 margin: 3px 5px;
@@ -38,11 +36,15 @@
                 white-space: normal;
     
                 &.selected {
-                    color: white;
-                    background-color: $primary-orange;
+                    color: $light-grey;
+                    background-color: $dark-primary-orange;
                     border-color: $primary-orange;
                 }
             }
         }
+    }
+
+    .redo-button {
+        padding-right: 10px;
     }
 }

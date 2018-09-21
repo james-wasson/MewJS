@@ -17,7 +17,8 @@
     #image-slider-logo-img {
         position: relative;
         width: 40%;
-        transform: translateX(25%)
+        transform: translateX(25%);
+        top: 8px;
     }
 
     #image-slider-letter-cover {
@@ -64,6 +65,7 @@
         }
 
         #image-slider-text {
+            padding: 5px;
             .title, .subtitle {
                 font-size: 16px !important;
             }

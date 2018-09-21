@@ -3,8 +3,6 @@ import reactiveTable from './reactiveTable'
 import nameDisplay from './nameDisplay';
 
 export default new Component({
-    parent: {
-    },
     self: {
         template: `
             <div id="page-examples">

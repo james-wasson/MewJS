@@ -3,6 +3,7 @@ import navbar from './navbar';
 import footer from './footer';
 import home from './pages/home/home.main';
 import examples from './pages/examples/examples.main';
+import docs from './pages/docs/docs.main';
 
 var BaseComponent = new Component({
     hooks: {
@@ -37,7 +38,7 @@ var BaseComponent = new Component({
 
                     </div>
                 </div>
-                <div id="footer" m-comp="'footer'"></div>
+                <div id="footer" class="footer" m-comp="'footer'"></div>
             </div>
         ` 
     },
@@ -58,7 +59,7 @@ var BaseComponent = new Component({
                 definition: home,
             },
             'documentation': {
-                definition: navbar,
+                definition: docs,
             },
             'examples': {
                 definition: examples,

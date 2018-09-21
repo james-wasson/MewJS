@@ -3,17 +3,20 @@
 
  <g>
   <title>background</title>
-  <rect fill="none" id="canvas_background" height="177" width="403" y="-1" x="-1"/>
-  <g display="none" id="canvasGrid">
-   <rect fill="url(#gridpattern)" stroke-width="0" y="1" x="1" height="400" width="580" id="svg_3"/>
+  <rect x="-1" y="-1" width="403" height="177" id="canvas_background" fill="none"/>
+  <g id="canvasGrid" display="none">
+   <rect id="svg_3" width="580" height="400" x="1" y="1" stroke-width="0" fill="url(#gridpattern)"/>
   </g>
  </g>
  <g>
   <title>Layer 1</title>
-  <path stroke="#000" id="svg_1" d="m70.75,174.234535l61.00001,-175l61.00001,175l-122.00001,0l-0.00001,0z" stroke-width="0" fill="#5757e5"/>
-  <path id="svg_2" d="m1,174.484535l61.00001,-175l61.00001,175l-122.00002,0z" stroke-width="0" stroke="#000" fill="#5757e5"/>
-  <path id="svg_4" d="m97.261722,174.484545l34.00001,-103.00002l34.00001,103.00002l-68.00002,0z" stroke-width="0" stroke="#000" fill="#f9f92a"/>
-  <path id="svg_6" d="m28.646333,174.484555l34.00001,-103.00002l34,103.00002l-68.00001,0z" stroke-width="0" stroke="#000" fill="#f9f92a"/>
-  <text stroke="#000" transform="matrix(1.31464672088623,0,0,1.4115544557571411,-60.45150125026703,-81.74939100630581) " font-style="normal" font-weight="bold" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="120" id="svg_9" y="181.37282" x="190.950082" stroke-width="0" fill="#5757e5">ew</text>
+  <path fill="#0c7bff" stroke-width="0" d="m70.75,175.23453l61.00001,-175l61.00001,175l-122.00001,0l-0.00001,0z" id="svg_1" stroke="#000"/>
+  <path fill="#0c7bff" stroke="#000" stroke-width="0" d="m1,175.48453l61.00001,-175l61.00001,175l-122.00002,0z" id="svg_2"/>
+  <path fill="#fcff00" stroke="#000" stroke-width="0" d="m97.26172,175.48454l34.00001,-103.00002l34.00001,103.00002l-68.00002,0z" id="svg_4"/>
+  <path fill="#fcff00" stroke="#000" stroke-width="0" d="m28.64633,175.48456l34.00001,-103.00003l34,103.00003l-68.00001,0z" id="svg_6"/>
+  <text fill="#0c7bff" stroke-width="0" x="191.710743" y="179.955942" id="svg_9" font-size="120" font-family="Helvetica, Arial, sans-serif" text-anchor="start" xml:space="preserve" font-weight="bold" font-style="normal" transform="matrix(1.31464672088623,0,0,1.4115544557571411,-60.45150125026703,-81.74939100630581) " stroke="#000">e</text>
+  <text font-weight="bold" xml:space="preserve" text-anchor="start" font-family="Helvetica, Arial, sans-serif" font-size="120" id="svg_13" y="-12.0625" x="126" stroke-opacity="null" stroke-width="0" stroke="#000" fill="#0c7bff">W</text>
+  <text fill="#0c7bff" stroke-width="0" x="190.950082" y="179.955942" id="svg_15" font-size="120" font-family="Helvetica, Arial, sans-serif" text-anchor="start" xml:space="preserve" font-weight="bold" font-style="normal" transform="matrix(1.31464672088623,0,0,1.4115544557571411,-60.45150125026703,-81.74939100630581) " stroke="#000">e</text>
+  <text fill="#0c7bff" stroke-width="0" x="257.127557" y="181.37282" id="svg_17" font-size="120" font-family="Helvetica, Arial, sans-serif" text-anchor="start" xml:space="preserve" font-weight="bold" font-style="normal" transform="matrix(1.31464672088623,0,0,1.4115544557571411,-60.45150125026703,-81.74939100630581) " stroke="#000">w</text>
  </g>
 </svg>
