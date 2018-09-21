@@ -6,8 +6,22 @@ export default new Component({
     self: {
         template: `
             <div id="page-examples">
-                <div class="box reactive-table-box" m-comp="'reactiveTable'"></div>
-                <div class="box name-display-box" m-comp="'nameDisplay'"></div>
+                <div class="columns">
+                    <div class="column is-two-thirds">
+                        <div class="box reactive-table-box" m-comp="'reactiveTable'"></div>
+                    </div>
+                    <div class="column">
+                        code goes here
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column is-two-thirds">
+                        <div class="box name-display-box" m-comp="'nameDisplay'"></div>
+                    </div>
+                    <div class="column">
+                        code goes here
+                    </div>
+                </div>
             </div>
         `,
     },

@@ -80,29 +80,26 @@ export default new Component({
     },
     children: {
         components: {
-            'wordList': new ComputedProp({
-                compute: function() {
-                    var words = this.wordString.split(' ').filter(w => w.trim().length > 0);
-                    var showOverlapSum = 0;
-                    return words.map(word => {
-                        var rv = {
-                            definition: slowShowTextComponent,
-                            props: {
-                                word: {
-                                    value: word,
-                                    type: 'string'
-                                },
-                                shouldShow: 'isShown',
-                                waitBeforeShow: {
-                                    value: showOverlapSum
-                                }
+            'wordList': new ComputedProp(function() {
+                var words = this.wordString.split(' ').filter(w => w.trim().length > 0);
+                var showOverlapSum = 0;
+                return words.map(word => {
+                    var rv = {
+                        definition: slowShowTextComponent,
+                        props: {
+                            word: {
+                                value: word,
+                                type: 'string'
+                            },
+                            shouldShow: 'isShown',
+                            waitBeforeShow: {
+                                value: showOverlapSum
                             }
                         }
-                        showOverlapSum += this.showOverlap;
-                        return rv;
-                    })
-                },
-                dynamic: true
+                    }
+                    showOverlapSum += this.showOverlap;
+                    return rv;
+                })
             })
         }
     }

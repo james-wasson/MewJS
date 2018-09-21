@@ -20,20 +20,18 @@ function initalizeComputedComponent(self) {
 }
 
 class ComputedProp extends Prop {
-    constructor(descriptor) {
-        super(null, descriptor.type || 'any', true);
+    constructor(compute, type) {
+        if (!typeChecker.isFunction(compute)) {
+            throw new Error('Computed Properties must have a function as their first argument');
+        }
+
+        super(null, type || 'any', true);
         this.$watchId = utils.uuidv4();
         this.$isDestroyed = false;
 
         this.$className = 'ComputedProp';
-        if (!typeChecker.isFunction(descriptor.compute)) {
-            throw new Error('Computed Properties must have a function registered under "compute".');
-        }
 
-        this.$descriptor = descriptor;
-        this.$computable = descriptor.compute;
-        this.$watch = typeChecker.isArray(descriptor.watch) ? descriptor.watch : [];
-        this.$dynamic = typeChecker.isBool(descriptor.dynamic) ? descriptor.dynamic : true;
+        this.$computable = compute;
         this.value = null;
         this.$isInitalized = false;
     }
@@ -42,16 +40,10 @@ class ComputedProp extends Prop {
         if (!this.$isInitalized) {
             self.$destroyable.push(this);
             this.$isInitalized = true;
-            var isDynamic = this.$dynamic;
             var $addWatcher = this.$addWatcher.bind(this)
             this.$evalFunction = GetEvalFunctionInSelf(self, this.$computable, function(propName, prop) {
-                if (isDynamic) {
-                    $addWatcher(prop, propName);
-                }
+                $addWatcher(prop, propName);
             });
-            for (var w of this.$watch) {
-                this.$addWatcher(self[w], w);
-            }
             this.$compute();
         }
     }
@@ -74,7 +66,7 @@ class ComputedProp extends Prop {
     }
 
     $clone() {
-        return new ComputedProp(this.$descriptor);
+        return new ComputedProp(this.$computable, this.type);
     }
 
     $destroy() {

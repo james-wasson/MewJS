@@ -19,8 +19,6 @@ var stateOption = new Component({
         props: {
             handleClick: {
                 value: function(e) {
-                    console.log(e);
-                    e.stopPropagation();
                     this.$emit.click(this.value, this.name);
                 }
             }
@@ -51,20 +49,17 @@ var stateDropdown = new Component({
             click: function(value, name){ this.$emit.selected(value, name); }
         },
         components: {
-            options: new ComputedProp({
-                compute: function() {
-                    return this.allStates.map(state => {
-                        return {
-                            definition: stateOption,
-                            props: {
-                                name: { value: state },
-                                value: { value: state },
-                                isSelected: { value: this.pickedStates.indexOf(state) > -1 }
-                            }
+            options: new ComputedProp(function() {
+                return this.allStates.map(state => {
+                    return {
+                        definition: stateOption,
+                        props: {
+                            name: { value: state },
+                            value: { value: state },
+                            isSelected: { value: this.pickedStates.indexOf(state) > -1 }
                         }
-                    })
-                },
-                dynamic: true
+                    }
+                })
             })
         }
     }
@@ -103,18 +98,12 @@ var tableRow = new Component({
                     },
                 },
                 props: {
-                    disableUp: new ComputedProp({
-                        compute: function() { 
-                            return this.index === 0; 
-                        },
-                        dynamic: true
-                    }),
-                    disableDown: new ComputedProp({
-                        compute: function() { 
-                            return this.index === this.maxIndex; 
-                        },
-                        dynamic: true
-                    })
+                    disableUp: new ComputedProp(function() { 
+                        return this.index === 0; 
+                    }, 'bool'),
+                    disableDown: new ComputedProp(function() { 
+                        return this.index === this.maxIndex; 
+                    }, 'bool')
                 }
             }
         }
@@ -222,29 +211,27 @@ export default new Component({
                     }
                 }
             },
-            tableRows: new ComputedProp({
-                compute: function() {
-                    var lastIndex = this.pickedStates.length - 1;
-                    return this.pickedStates.map((p, i) => {
-                        return {
-                            definition: tableRow,
-                            props: {
-                                name: {
-                                    value: p,
-                                    type: 'string'
-                                },
-                                index: {
-                                    value: i,
-                                    type: 'int'
-                                },
-                                maxIndex: {
-                                    value: lastIndex,
-                                    type: 'int'
-                                }
+            tableRows: new ComputedProp(function() {
+                var lastIndex = this.pickedStates.length - 1;
+                return this.pickedStates.map((p, i) => {
+                    return {
+                        definition: tableRow,
+                        props: {
+                            name: {
+                                value: p,
+                                type: 'string'
+                            },
+                            index: {
+                                value: i,
+                                type: 'int'
+                            },
+                            maxIndex: {
+                                value: lastIndex,
+                                type: 'int'
                             }
                         }
-                    })
-                }
+                    }
+                })
             })
         }
     }
