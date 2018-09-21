@@ -1,4 +1,4 @@
-## ![MewJS](https://raw.githubusercontent.com/james-wasson/MewJS/master/assets/LogoName.png)
+## ![MewJS](https://raw.githubusercontent.com/james-wasson/MewJS/master/assets/LogoName.png =250x)
 
 One Paragraph of project description goes here
 
