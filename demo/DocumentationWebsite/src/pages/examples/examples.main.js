@@ -4,22 +4,41 @@ import nameDisplay from './nameDisplay';
 
 export default new Component({
     self: {
+        props: {
+            size: {
+                value: 5000
+            }
+        },
         template: `
             <div id="page-examples">
                 <div class="columns">
-                    <div class="column is-two-thirds">
+                    <div class="column is-full">
                         <div class="box reactive-table-box" m-comp="'reactiveTable'"></div>
                     </div>
                     <div class="column">
-                        code goes here
+                        <figure>
+                            <figcaption><!-- Your code title here --></figcaption>
+                            <pre>
+                                <code>
+                                    <!-- your code here -->
+                                </code>
+                            </pre>
+                        </figure>
                     </div>
                 </div>
                 <div class="columns">
-                    <div class="column is-two-thirds">
+                    <div class="column is-full">
                         <div class="box name-display-box" m-comp="'nameDisplay'"></div>
                     </div>
                     <div class="column">
-                        code goes here
+                        <figure>
+                            <figcaption><!-- Your code title --></figcaption>
+                            <pre>
+                                <code>
+                                    <!-- your code here -->
+                                </code>
+                            </pre>
+                        </figure>
                     </div>
                 </div>
             </div>

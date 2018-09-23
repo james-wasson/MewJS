@@ -2,7 +2,7 @@ import { Component, ComputedProp } from 'Mew';
 import upDownButtons from '../../standard/upDownButtons';
 import redoButton from '../../standard/redoButton';
 
-const DEFAULT_STATES = ["British Columbia", "Ontario", "Quebec"];
+const DEFAULT_OPTIONS = ["British Columbia", "Ontario", "Quebec"];
 
 function moveArrayItem(array, from, to) {
     array = array.slice();
@@ -33,9 +33,9 @@ var stateOption = new Component({
     }
 })
 
-var stateDropdown = new Component({
+var optionsPicker = new Component({
     parent: {
-        props: ['pickedStates', 'allStates'],
+        props: ['pickedNames', 'allOptions'],
         emit: ['selected']
     },
     self: {
@@ -50,13 +50,13 @@ var stateDropdown = new Component({
         },
         components: {
             options: new ComputedProp(function() {
-                return this.allStates.map(state => {
+                return this.allOptions.map(state => {
                     return {
                         definition: stateOption,
                         props: {
                             name: { value: state },
                             value: { value: state },
-                            isSelected: { value: this.pickedStates.indexOf(state) > -1 }
+                            isSelected: { value: this.pickedNames.indexOf(state) > -1 }
                         }
                     }
                 })
@@ -111,8 +111,6 @@ var tableRow = new Component({
 });
 
 export default new Component({
-    parent: {
-    },
     self: {
         props: {
             takeAction: {
@@ -126,26 +124,26 @@ export default new Component({
                 value: false,
                 type: 'bool'
             },
-            states: {
+            allOptions: {
                 value: ["British Columbia", "Alberta", "Saskatchewan", "Manitoba", "Ontario", "Quebec", "New Brunswick", "Prince Edward Island", "Nova Scotia", "Newfoundland and Labrador", "Yukon", "Northwest Territories", "Nunavut"],
                 type: 'array',
                 frozen: true
             },
-            pickedStates: {
-                value: DEFAULT_STATES.slice(),
+            pickedNames: {
+                value: DEFAULT_OPTIONS.slice(),
                 type: 'array'
             },
-            addState: {
+            addRow: {
                 value: function(state) {
-                    var newarray = this.pickedStates.slice();
+                    var newarray = this.pickedNames.slice();
                     newarray.push(state);
-                    this.pickedStates = newarray;
+                    this.pickedNames = newarray;
                     this.takeAction();
                 }
             },
-            removeState: {
+            removeRow: {
                 value: function(index) {
-                    this.pickedStates = this.pickedStates.filter((p, i) => i !== index);
+                    this.pickedNames = this.pickedNames.filter((p, i) => i !== index);
                     this.takeAction();
                 }
             }
@@ -153,7 +151,7 @@ export default new Component({
         template: `
         <div id="reactive-table" 
             style="position: relative;" 
-            m-comp="['stateDropdown', 'redoButton']"
+            m-comp="['optionsPicker', 'redoButton']"
             m-bind:class="{ 'redo-animation-active': this.actionWasTaken }">
             <table class="table is-striped is-fullwidth is-hoverable">
                 <thead>
@@ -170,15 +168,15 @@ export default new Component({
     children: {
         listeners: {
             movedown: function(index) {
-                this.pickedStates = moveArrayItem(this.pickedStates, index, index + 1);
+                this.pickedNames = moveArrayItem(this.pickedNames, index, index + 1);
                 this.takeAction();
             },
             moveup: function(index) {
-                this.pickedStates = moveArrayItem(this.pickedStates, index, index - 1);
+                this.pickedNames = moveArrayItem(this.pickedNames, index, index - 1);
                 this.takeAction();
             },
             delete: function(index) {
-                this.removeState(index);
+                this.removeRow(index);
                 this.takeAction();
             }
         },
@@ -189,49 +187,44 @@ export default new Component({
                 listeners: {
                     'redo': function() {
                         this.actionWasTaken = false;
-                        this.pickedStates = DEFAULT_STATES.slice();
+                        this.pickedNames = DEFAULT_OPTIONS.slice();
                     }
                 }
             },
-            stateDropdown: {
-                definition: stateDropdown,
+            optionsPicker: {
+                definition: optionsPicker,
                 prepend: true,
-                props: {
-                    'pickedStates': 'pickedStates',
-                    'allStates': 'states'
-                },
+                props: ['pickedNames', 'allOptions'],
                 listeners: {
                     selected: function(value, name) {
-                        var index = this.pickedStates.indexOf(value);
+                        var index = this.pickedNames.indexOf(value);
                         if (index > -1) {
-                            this.removeState(index);
+                            this.removeRow(index);
                         } else {
-                            this.addState(value, name)                            
+                            this.addRow(value, name)                            
                         }
                     }
                 }
             },
             tableRows: new ComputedProp(function() {
-                var lastIndex = this.pickedStates.length - 1;
-                return this.pickedStates.map((p, i) => {
-                    return {
-                        definition: tableRow,
-                        props: {
-                            name: {
-                                value: p,
-                                type: 'string'
-                            },
-                            index: {
-                                value: i,
-                                type: 'int'
-                            },
-                            maxIndex: {
-                                value: lastIndex,
-                                type: 'int'
-                            }
+                var lastIndex = this.pickedNames.length - 1;
+                return this.pickedNames.map((state, i) => ({
+                    definition: tableRow,
+                    props: {
+                        name: {
+                            value: state,
+                            type: 'string'
+                        },
+                        index: {
+                            value: i,
+                            type: 'int'
+                        },
+                        maxIndex: {
+                            value: lastIndex,
+                            type: 'int'
                         }
                     }
-                })
+                }))
             })
         }
     }

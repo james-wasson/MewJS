@@ -283,14 +283,8 @@ function processHtmlRecursively(self, parentNode) {
     }
 }
 
-function processTemplateHtml() {
-    if (!this.$templateHtml && this.$templateHtml.content) return;
-    if (!typeChecker.isElementNode(this.$templateHtml)) {
-        console.error("Cannot parse templates html if not a dom element.");
-        return;
-    }
-
-    processHtmlRecursively(this, this.$templateHtml.content);
+function processTemplateHtml(html) {
+    processHtmlRecursively(this, html.content);
 }
 
 export default processTemplateHtml;

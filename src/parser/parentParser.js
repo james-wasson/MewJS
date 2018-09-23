@@ -41,22 +41,6 @@ function processParent(self, parentDef, parentScopeAccess) {
         }
     }
 
-    if (parentDef.hasOwnProperty('slots')) {
-        if (Array.isArray(parentDef.slots)) {
-            console.error('slots on parent must be array of strings.')
-        } else {
-            for (var slot of parentDef.slots) {
-                if (typeof slot !== 'string')
-                    console.error('Only strings are allowed in slot array values.');
-                else if (!parentScope.$slots || typeof parentScope.$slots !== 'object' || !parentScope.$slots[slot]) {
-                    console.error('Slot "'+slot+'" doesn\' exist on parent');
-                } else {
-                    self.$slots[slot] = parentScope.$slots[slot];
-                }
-            }
-        }
-    }
-
     if (parentDef.hasOwnProperty('emit')) {
         if (Array.isArray(parentDef.emit)) {
             for(var eventName of parentDef.emit) {

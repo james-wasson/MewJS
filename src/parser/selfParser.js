@@ -1,4 +1,3 @@
-import utils from '../utils';
 import { typeChecker } from '../typeManager';
 import propParser from './propParser';
 import { PROCESS_PROP_OPTIONS } from './propParser';
@@ -6,16 +5,6 @@ import { PROCESS_PROP_OPTIONS } from './propParser';
 function processSelf(self, selfDef) {
     if (selfDef.hasOwnProperty('props')) {
         propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, this, selfDef.props, this)
-    }
-
-    if (selfDef.hasOwnProperty('template')) {
-        if (typeChecker.isString(selfDef.template)) {
-            this.$template = selfDef.template;
-
-            this.$templateHtml = utils.getDocument(this.$template);
-        } else {
-            console.error('template must be of type "string"');
-        }
     }
 
     if (selfDef.hasOwnProperty('watchers')) {

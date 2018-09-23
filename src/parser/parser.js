@@ -1,3 +1,4 @@
+import utils from '../utils';
 import childParser from './childParser';
 import parentParser from './parentParser';
 import selfParser from './selfParser';
@@ -9,7 +10,7 @@ import { callMountedHooks } from '../callHooks';
 import { initalizeComputedComponent } from '../computedProp';
 
 class Component {
-    constructor(compDescriptor, parentScope, parentNode, componentName) {
+    constructor(compDescriptor, html, parentScope, parentNode, componentName) {
         this.$isDestroyed = false;
         this.$componentName = componentName;
         this.$proxy = proxyContext(this);
@@ -34,6 +35,7 @@ class Component {
         this.$nodes = [];
         this.$_onMounted = [];
         this.$destroyable = [];
+        this.$templateHtml = html;
 
         if (!typeChecker.isObject(compDescriptor.self)) {
             throw new Error('Components must have self defined of type "object".');
@@ -52,7 +54,7 @@ class Component {
             hooksParser.call(this, compDescriptor.hooks);
         
         
-        htmlParser.call(this);
+        htmlParser.call(this, html);
 
 
         initalizeComputedComponent(this);
@@ -68,7 +70,12 @@ class Component {
 
 class ComponentFactory {
     constructor(compDescriptor) {
-        this.descriptor = compDescriptor;
+        if (typeChecker.isObject(compDescriptor) && typeChecker.isObject(compDescriptor.self) && typeChecker.isString(compDescriptor.self.template))
+            this.$templateHtml = utils.getDocument(compDescriptor.self.template);
+        else
+            throw new Error('Self must have a string called template defined on it.');
+        
+        this.$descriptor = compDescriptor;
         this.$className = "ComponentFactory";
     }
 
@@ -78,15 +85,18 @@ class ComponentFactory {
     }
 
     $create(parentNode) {
-        var component = new Component(this.descriptor, this.$parentScope, parentNode, this.$componentName);
+        var component = new Component(this.$descriptor, this.$templateHtml.cloneNode(true), this.$parentScope, parentNode, this.$componentName);
                 
         if (component.$hooks.$created)
             component.$hooks.$created.call(component.$proxy);
+
+        
+
         return component.$proxy;
     }
 
     $clone() {
-        return new ComponentFactory(this.descriptor);
+        return new ComponentFactory(this.$descriptor);
     }
 }
 
