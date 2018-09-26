@@ -8,7 +8,8 @@ allowing us to impliment components with little to no overhead.
 To run the documentation website:
 * Download this Repo
 * Navigate to the root directory
-* Type "npm run start:doc"
+* Type "npm install" to download dependencies
+* Type "npm run start:doc" to start the documentation site
 * Navigate to "[http://localhost:9000](http://localhost:9000)" in your favorite web browser
 
 ## Authors
