@@ -8,11 +8,9 @@
   },
   "devDependencies": {
     "bulma": "^0.7.1",
-    "concurrently": "^4.0.1",
     "css-loader": "^1.0.0",
     "file-loader": "^2.0.0",
     "html-loader": "^0.5.5",
-    "jQuery": "^1.7.4",
     "less": "^3.8.1",
     "less-loader": "^4.1.0",
     "node-sass": "^4.9.3",
