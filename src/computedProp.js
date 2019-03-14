@@ -1,11 +1,16 @@
-import { typeChecker } from './typeManager';
-import { GetEvalFunctionInSelf } from './getRecorder';
+'use strict';
+
+import {
+    typeChecker,
+} from './typeManager';
+import {
+    GetEvalFunctionInSelf,
+} from './getRecorder';
 import Prop from './prop';
 import utils from './utils';
 
-
 function initalizeComputedComponent(self) {
-    var initalize = function(obj, propName) {
+    var initalize = function(obj) {
         for (var propName in obj) 
             if (typeChecker.isComputedProp(obj[propName]))
                 obj[propName].$initalize(self);
@@ -76,8 +81,7 @@ class ComputedProp extends Prop {
 
 export {
     initalizeComputedComponent,
-    ComputedProp
-}
+    ComputedProp,
+};
 
 export default ComputedProp;
-

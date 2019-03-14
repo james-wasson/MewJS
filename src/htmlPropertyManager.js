@@ -1,3 +1,5 @@
+'use strict';
+
 function removeStyle(node, styleTag) {
     if (node.style.removeProperty) {
         node.style.removeProperty(styleTag);
@@ -52,5 +54,15 @@ export {
     setProperty,
     hasClass,
     addClass,
-    removeClass
+    removeClass,
+};
+
+export default {
+    removeStyle,
+    addStyle,
+    removeProperty,
+    setProperty,
+    hasClass,
+    addClass,
+    removeClass,
 };

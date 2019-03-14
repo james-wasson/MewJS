@@ -1,4 +1,5 @@
 'use strict';
+
 function createTypeChecker(checker) {
     return function(obj, nullable = false) {
         if (typeof obj === 'undefined') return false;
@@ -91,5 +92,12 @@ export {
     typeChecker,
     isType,
     typeSafeGetter,
-    typeSafePropGetter
-}
+    typeSafePropGetter,
+};
+
+export default {
+    typeChecker,
+    isType,
+    typeSafeGetter,
+    typeSafePropGetter,
+};

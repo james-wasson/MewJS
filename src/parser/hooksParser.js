@@ -1,6 +1,10 @@
-import { typeChecker } from '../typeManager';
+'use strict';
 
-export default function(descriptor) {
+import {
+    typeChecker,
+} from '../typeManager';
+
+function hookParser(descriptor) {
 
     if (descriptor.hasOwnProperty('mounted')) {
         if (typeChecker.isFunction(descriptor.mounted)) {
@@ -18,3 +22,9 @@ export default function(descriptor) {
         }
     }
 }
+
+export {
+    hookParser,
+};
+
+export default hookParser;

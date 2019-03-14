@@ -1,8 +1,10 @@
+'use strict';
+
 function recurseThroughComponentTree(root, callBack) {
     var component = root.$component;
-    callBack(root.$component);
-    if (root.$component.$children && root.$component.$children.$activeComponents)
-        root.$component.$children.$activeComponents.forEach(c => recurseThroughComponentTree(c, callBack));
+    callBack(component);
+    if (component.$children && component.$children.$activeComponents)
+        component.$children.$activeComponents.forEach(c => recurseThroughComponentTree(c, callBack));
 }
 
 function callMountedHooks(component) {
@@ -14,5 +16,9 @@ function callMountedHooks(component) {
 }
 
 export {
+    callMountedHooks
+};
+
+export default {
     callMountedHooks
 };

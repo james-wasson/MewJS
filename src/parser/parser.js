@@ -1,3 +1,5 @@
+'use strict';
+
 import utils from '../utils';
 import childParser from './childParser';
 import parentParser from './parentParser';
@@ -5,9 +7,15 @@ import selfParser from './selfParser';
 import htmlParser from './htmlParser';
 import hooksParser from './hooksParser';
 import proxyContext from '../proxyContext';
-import { typeChecker } from '../typeManager';
-import { callMountedHooks } from '../callHooks';
-import { initalizeComputedComponent } from '../computedProp';
+import {
+    typeChecker,
+} from '../typeManager';
+import {
+    callMountedHooks,
+} from '../callHooks';
+import {
+    initalizeComputedComponent,
+} from '../computedProp';
 
 class Component {
     constructor(compDescriptor, html, parentScope, parentNode, componentName) {
@@ -44,7 +52,7 @@ class Component {
         if (compDescriptor.hasOwnProperty('parent'))
             parentParser.call(this, this, compDescriptor.parent, parentScope);
 
-        selfParser.call(this, this, compDescriptor.self);
+        selfParser.call(this, compDescriptor.self);
 
         if (compDescriptor.hasOwnProperty('children'))
             childParser.call(this, this, compDescriptor.children);
@@ -90,8 +98,6 @@ class ComponentFactory {
         if (component.$hooks.$created)
             component.$hooks.$created.call(component.$proxy);
 
-        
-
         return component.$proxy;
     }
 
@@ -126,5 +132,10 @@ function MountComponent(nodeOrId, componentFactory) {
 
 export { 
     ComponentFactory as Component,
-    MountComponent
-}
+    MountComponent,
+};
+
+export default { 
+    Component: ComponentFactory,
+    MountComponent,
+};

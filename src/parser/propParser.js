@@ -1,6 +1,11 @@
-import utils from '../utils';
-import { typeChecker, typeSafePropGetter } from '../typeManager';
+'use strict';
+
 import isVarName from 'is-var-name';
+import utils from '../utils';
+import { 
+    typeChecker,
+    typeSafePropGetter,
+} from '../typeManager';
 import Prop from '../prop';
 
 function definePropOnSelf(self, prop, value) {
@@ -140,6 +145,9 @@ function propParser(processOption, self, propsObj, scope = {}, propCallback = nu
     }
 }
 
-export { PROCESS_PROP_OPTIONS };
+export { 
+    PROCESS_PROP_OPTIONS, 
+    propParser,
+};
 
 export default propParser;

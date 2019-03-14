@@ -1,4 +1,9 @@
-import { typeChecker, isType } from './typeManager';
+'use strict';
+
+import {
+    typeChecker,
+    isType,
+} from './typeManager';
 
 function checkIsDep(dep, silent) {
     silent = silent === true;
@@ -7,7 +12,7 @@ function checkIsDep(dep, silent) {
             if (typeChecker.isFunction(dep.$destroyable.$destroy) && typeChecker.isBool(dep.$destroyable.$isDestroyed)) {
                 return true;
             } else {
-                if (!silent) console.error('Destroyable objects must implement the $isDestroyed and $destry hooks');
+                if (!silent) console.error('Destroyable objects must implement the $isDestroyed and $destroy hooks');
             }
         } else {
             if (!silent) console.error('Dependencies must implement both the $run and $destroyable hooks');
@@ -129,5 +134,9 @@ class Prop {
         return this.$getValue();
     }
 }
+
+export {
+    Prop,
+};
 
 export default Prop;

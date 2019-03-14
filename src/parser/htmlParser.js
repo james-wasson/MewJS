@@ -1,8 +1,21 @@
+'use strict';
+
 import utils from '../utils';
-import { typeChecker } from '../typeManager';
-import { removeStyle, addStyle, setProperty, addClass, removeClass } from '../htmlPropertyManager';
-import { GetEvalFunctionInSelf } from '../getRecorder';
-import { callMountedHooks } from '../callHooks';
+import {
+    typeChecker,
+} from '../typeManager';
+import {
+    removeStyle,
+    addStyle,
+    addClass,
+    removeClass,
+} from '../htmlPropertyManager';
+import {
+    GetEvalFunctionInSelf,
+} from '../getRecorder';
+import {
+    callMountedHooks,
+} from '../callHooks';
 
 function attributeObjectParser(evalObj, performAction, node, attribute) {
     if (typeChecker.isObject(evalObj)) {
@@ -286,5 +299,9 @@ function processHtmlRecursively(self, parentNode) {
 function processTemplateHtml(html) {
     processHtmlRecursively(this, html.content);
 }
+
+export {
+    processTemplateHtml,
+};
 
 export default processTemplateHtml;

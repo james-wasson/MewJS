@@ -1,3 +1,5 @@
+'use strict';
+
 function objectFilter(obj, predicate) {
     var rv = Object.assign({}, obj);
     for (var key in rv) {
@@ -22,9 +24,14 @@ var getDocument = function(html, tagType) {
     return doc;
 }
 
-export { objectFilter, uuidv4, getDocument };
-export default { 
-    objectFilter: objectFilter,
-    uuidv4: uuidv4,
-    getDocument: getDocument
+export { 
+    objectFilter, 
+    uuidv4, 
+    getDocument,
 };
+
+export default {
+    objectFilter, 
+    uuidv4, 
+    getDocument,
+}

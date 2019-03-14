@@ -1,22 +1,27 @@
+'use strict';
+
 import utils from '../utils';
-import { typeChecker } from '../typeManager';
-import propParser from './propParser';
-import { PROCESS_PROP_OPTIONS } from './propParser';
-import { Component } from './parser';
+import {
+    typeChecker,
+} from '../typeManager';
+import {
+    propParser,
+    PROCESS_PROP_OPTIONS,
+} from './propParser';
 
 function processListener(listeners, callBack) {
-    if (!typeChecker.isObject(listeners)) {
-        console.error('Listeners on child must be in form of object.')
-    } else {
+    if (typeChecker.isObject(listeners)) {
         for (var eventName in listeners) {
             if (listeners.hasOwnProperty(eventName)) {
-                if (!typeChecker.isFunction(listeners[eventName])) {
-                    console.error('Listeners bound to an event must be of type "function"')
-                } else {
+                if (typeChecker.isFunction(listeners[eventName])) {
                     callBack(eventName, listeners[eventName]);
+                } else {
+                    console.error('Listeners bound to an event must be of type "function"');
                 }
             }
         }
+    } else {
+        console.error('Listeners on child must be in form of object.');
     }
 }
 
@@ -114,7 +119,7 @@ class ComponentProcessor {
     }
 }
 
-function processChildren(self, childrenDef) {
+function childParser(self, childrenDef) {
     if (!typeChecker.isObject(childrenDef)) {
         console.error("Malformed children object.");
         return;
@@ -154,4 +159,8 @@ function processChildren(self, childrenDef) {
     }
 }
 
-export default processChildren;
+export {
+    childParser,
+};
+
+export default childParser;

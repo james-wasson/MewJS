@@ -1,8 +1,14 @@
-import { typeChecker } from '../typeManager';
-import propParser from './propParser';
-import { PROCESS_PROP_OPTIONS } from './propParser';
+'use strict';
 
-function processSelf(self, selfDef) {
+import {
+    typeChecker,
+} from '../typeManager';
+import {
+    propParser,
+    PROCESS_PROP_OPTIONS,
+} from './propParser';
+
+function selfParser(selfDef) {
     if (selfDef.hasOwnProperty('props')) {
         propParser(PROCESS_PROP_OPTIONS.DEFINITION_OBJECT, this, selfDef.props, this)
     }
@@ -35,4 +41,8 @@ function processSelf(self, selfDef) {
     }
 }
 
-export default processSelf;
+export {
+    selfParser,
+};
+
+export default selfParser;

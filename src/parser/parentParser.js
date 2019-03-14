@@ -1,7 +1,12 @@
-import utils from '../utils';
-import { typeChecker } from '../typeManager';
-import propParser from './propParser';
-import { PROCESS_PROP_OPTIONS } from './propParser';
+'use strict';
+
+import {
+    typeChecker,
+} from '../typeManager';
+import {
+    propParser,
+    PROCESS_PROP_OPTIONS,
+} from './propParser';
 import Prop from '../prop';
 
 function freezePropOnSelf(self, prop) {
@@ -12,32 +17,33 @@ function freezePropOnSelf(self, prop) {
     self[prop] = new Prop(self[prop], 'prop', true);
 }
 
-function processParent(self, parentDef, parentScopeAccess) {
-    if (!parentDef || typeof parentDef !== 'object') {
+function parentParser(self, parentDef, parentScopeAccess) {
+    if (!typeChecker.isObject(parentDef)) {
         console.error("Malformed parent object.");
         return;
     }
 
-    var parentScopeIsGood = parentScopeAccess && typeof parentScopeAccess === 'object';
-    // pasrse the props object
+    if (!typeChecker.isObject(parentScopeAccess)) return;
+
+    // parsse the props object
     if (parentDef.hasOwnProperty('props')) {
-        if (!parentScopeIsGood || !parentScopeAccess.$props || typeof parentScopeAccess.$props !== 'object') {
-            console.error('Cannot inherit props from null parent props.');
-        } else {
+        if (typeChecker.isObject(parentScopeAccess.$props)) {
             var props = parentDef.props;
             if (Array.isArray(props)) {
                 propParser(PROCESS_PROP_OPTIONS.ARRAY, self, props, parentScopeAccess.$props, function(self, prop) {
                     self.$inheritedProps.push(prop);
                     freezePropOnSelf(self, prop);
-                })
+                });
             } else if (typeof props === 'object') {
                 propParser(PROCESS_PROP_OPTIONS.RENAME_OBJECT, self, props, parentScopeAccess.$props, function(self, prop) { 
                     self.$inheritedProps.push(prop);
                     freezePropOnSelf(self, prop);
-                })
+                });
             } else {
                 console.error('Props on parent must be of type "object".')
             }
+        } else {
+            console.error('Cannot inherit props from null parent props.');
         }
     }
 
@@ -52,10 +58,11 @@ function processParent(self, parentDef, parentScopeAccess) {
                     self.$emit[eventName] =  (function(self, listeners){
                         var rv = function() {
                             for(var listener of listeners) {
-                                if (typeof listener === 'function')
+                                if (typeChecker.isFunction(listener)) {
                                     listener.apply(self.$parent.$proxy, arguments);
-                                else
+                                } else {
                                     console.error('Listener is not of type "function"')
+                                }
                             }
                         };
                         rv.eventName = eventName;
@@ -68,9 +75,13 @@ function processParent(self, parentDef, parentScopeAccess) {
         }
     }
 
-    if (parentScopeAccess && parentScopeAccess.hasOwnProperty('$parent') && typeChecker.isComponent(parentScopeAccess.$parent)) {
+    if (hasParentScope && typeChecker.isComponent(parentScopeAccess.$parent)) {
         self.$parent = parentScopeAccess.$parent;
     }
 }
 
-export default processParent;
+export {
+    parentParser,
+};
+
+export default parentParser;

@@ -1,4 +1,8 @@
-import { typeChecker } from './typeManager';
+'use strict';
+
+import {
+    typeChecker,
+} from './typeManager';
 
 /**
  * Returns a proxy for handling getting and setting props
@@ -36,6 +40,7 @@ function ProxyContext(context, options) {
                 console.warn('Property "' + prop + '" does not exist on object. Cannot set value.');
                 return false;
             }
+
             if (typeChecker.isProp(props[prop])) {
                 props[prop].$setValue(value);
                 if (options.onSet) options.onSet(prop, props[prop], value);
@@ -43,6 +48,7 @@ function ProxyContext(context, options) {
             } else {
                 console.error('Can only set value for type of prop.');
             }
+            
             return false;
         },
         $className: 'ProxyContext'
@@ -51,23 +57,24 @@ function ProxyContext(context, options) {
 
 var $openApis = {
     /**
-     * Removes all dependencies from a prop
-     * this -> props object
-     * @param {String} prop property to add deps to
+     * Exposes the raw prop within a wrapped object
      */
-    $forceDepsUpdate: function (prop) {
-        if (typeChecker.isProp(this[prop])) 
-            this[prop].$runDepsUpdate();
-    },
-    // Exposes the raw prop within a wrapped object
     $props: function(prop) {
         if (typeChecker.isProp(this[prop])) 
             return this[prop];
         return null;
     },
+
+    /**
+     * exposes the raw component without a proxy
+     */
     $component: function() {
         return this;
     }
+};
+
+export {
+    ProxyContext,
 };
 
 export default ProxyContext;
