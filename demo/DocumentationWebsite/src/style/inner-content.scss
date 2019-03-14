@@ -7,20 +7,56 @@
     margin-top: $body-margin-top-bottom;
     margin-bottom: $body-margin-top-bottom;
 
-    &.collapse-for-scrollbar {
-        margin-right: calc(#{$margin-left-right} - 17px);
-        width: calc(100% - #{$margin-left-right} - #{$margin-left-right} + 17px);
+    &.collapse-for-scroll {
+        animation-name: collapse-scroll;
+        animation-duration: 0.5s;
+        animation-fill-mode: forwards;
+    }
+
+    &.no-scroll {
+        animation-name: decollapse-scroll;
+        animation-duration: 0.5s;
+        animation-fill-mode: forwards;
+    }
+
+    @keyframes collapse-scroll {
+        0% {
+            margin-right: $margin-left-right;
+        }
+        100% {
+            margin-right: $margin-left-right - 17;
+        }
+    }
+
+    @keyframes decollapse-scroll {
+        0% {
+            margin-right: $margin-left-right - 17;
+        }
+        100% {
+            margin-right: $margin-left-right;
+        }
     }
 
     @media screen and (max-width: $desktop - 1px) { // they designed with min width, so off by one
-        & {
-            margin-left: $margin-left-right-small;
-            margin-right: $margin-left-right-small;
-        }
+        margin-left: $margin-left-right-small;
+        margin-right: $margin-left-right-small;
 
-        &.collapse-for-scrollbar {
-            margin-right: calc(#{$margin-left-right-small} - 17px);
-            width: calc(100% - #{$margin-left-right-small} - #{$margin-left-right-small} + 17px);
+        @keyframes collapse-scroll {
+            0% {
+                margin-right: $margin-left-right-small;
+            }
+            100% {
+                margin-right: $margin-left-right-small - 17;
+            }
+        }
+    
+        @keyframes decollapse-scroll {
+            0% {
+                margin-right: $margin-left-right-small - 17;
+            }
+            100% {
+                margin-right: $margin-left-right-small;
+            }
         }
     }
 }

@@ -32,12 +32,12 @@ function setProperty(node, attr, value) {
     }
 }
 
-function hasClass(ele,cls) {
+function hasClass(ele, cls) {
     return !!ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
 }
 
-function addClass(ele,cls) {
-    if (!hasClass(ele,cls)) ele.className = (ele.className + " " + cls).trim();
+function addClass(ele, cls) {
+    if (!hasClass(ele, cls)) ele.className = (ele.className + " " + cls).trim();
 }
 
 function removeClass(ele,cls) {

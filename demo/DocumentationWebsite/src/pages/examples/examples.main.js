@@ -15,30 +15,10 @@ export default new Component({
                     <div class="column is-full">
                         <div class="box reactive-table-box" m-comp="'reactiveTable'"></div>
                     </div>
-                    <div class="column">
-                        <figure>
-                            <figcaption><!-- Your code title here --></figcaption>
-                            <pre>
-                                <code>
-                                    <!-- your code here -->
-                                </code>
-                            </pre>
-                        </figure>
-                    </div>
                 </div>
                 <div class="columns">
                     <div class="column is-full">
                         <div class="box name-display-box" m-comp="'nameDisplay'"></div>
-                    </div>
-                    <div class="column">
-                        <figure>
-                            <figcaption><!-- Your code title --></figcaption>
-                            <pre>
-                                <code>
-                                    <!-- your code here -->
-                                </code>
-                            </pre>
-                        </figure>
                     </div>
                 </div>
             </div>

@@ -15,7 +15,7 @@ var BaseComponent = new Component({
                 } else {
                     this.hasScrollbar = false;
                 }
-            }.bind(this, body), 300);
+            }.bind(this, body), 50);
         }
     },
     self: {
@@ -34,8 +34,10 @@ var BaseComponent = new Component({
             <div id="content">
                 <div id="navbar" m-comp="'navbar'"></div>
                 <div id="body">
-                    <div id="inner-content" m-bind:class="{ 'collapse-for-scrollbar': this.hasScrollbar }" m-comp="this.pageName">
-
+                    <div id="inner-content"
+                        class="collapse-for-scroll"
+                        m-bind:class="{ 'no-scroll': !this.hasScrollbar }" 
+                        m-comp="this.pageName">
                     </div>
                 </div>
                 <div id="footer" class="footer" m-comp="'footer'"></div>
@@ -70,4 +72,3 @@ var BaseComponent = new Component({
 
 // Mount the Component
 var comp = MountComponent('#main-mount-point', BaseComponent);
-console.log(comp);
