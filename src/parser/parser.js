@@ -64,9 +64,7 @@ class Component {
         
         htmlParser.call(this, html);
 
-
         initalizeComputedComponent(this);
-
     }
 
     $destroy() {
